@@ -3,56 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="estilo.css">
-    <title>SisCristóvão - Cadastro de Serviços</title>
+    <title>Salão Belíssima - Serviços</title>
 </head>
+
 <body>
+
     <nav>
-        <a href="index.html">Home</a>
-        <a href="clientes.html">Clientes</a>
+        <div class="logo">SALÃO BELÍSSIMA</div>
+
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre</a>
         <a href="servicos.html">Serviços</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="consulta_agendamentos.html">Consulta Agendamentos</a>
+        <a href="contato.html">Contato</a>
+        <a href="agendamento.html">Agendamento</a>
+        <a href="consultas.html">Consultas</a>
     </nav>
 
     <header class="banner">
-        <h1>Gestão de Serviços</h1>
-        <p>Cadastre e configure o catálogo de assistência técnica do laboratório</p>
+        <h1>Nossos Serviços</h1>
+        <p>Beleza, autoestima e bem-estar em um só lugar.</p>
     </header>
 
     <div class="container">
+
         <div class="card">
-            <h2>Novo Serviço</h2>
+
+            <h2>Cadastrar Serviço</h2>
+
             <form action="/salvar-servico" method="POST">
-                <label for="descricao">Descrição do Serviço:</label>
-                <input type="text" id="descricao" name="descricao" placeholder="Ex: Formatação e Instalação de Sistema Operacional" required>
-                
-                <label for="preco">Preço / Custo de Materiais (R$):</label>
+
+                <label for="descricao">Nome do Serviço:</label>
+                <input type="text" id="descricao" name="descricao" placeholder="Ex: Corte Feminino" required>
+
+                <label for="preco">Valor (R$):</label>
                 <input type="number" step="0.01" id="preco" name="preco" placeholder="0.00" required>
-                
-                <label for="tempo_estimado">Tempo Estimado (em horas):</label>
-                <input type="number" id="tempo_estimado" name="tempo_estimado" placeholder="Ex: 2" min="1" required>
-                
+
+                <label for="tempo_estimado">Tempo Estimado (minutos):</label>
+                <input type="number" id="tempo_estimado" name="tempo_estimado" placeholder="Ex: 60" required>
+
                 <button type="submit">Salvar Serviço</button>
+
             </form>
+
         </div>
 
-        <div class="card" style="margin-top: 20px;">
-            <h2>Serviços Disponíveis</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
-                Catálogo de atividades técnicas executadas pelos alunos no laboratório do São Cristóvão.
+        <div class="card" style="margin-top:20px;">
+
+            <h2>Lista de Serviços</h2>
+
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">
+                Confira os serviços oferecidos pelo Salão Belíssima.
             </p>
+
             <table>
+
                 <thead>
                     <tr>
-                        <th>Descrição</th>
-                        <th>Preço (R$)</th>
-                        <th>Tempo Estimado</th>
+                        <th>Serviço</th>
+                        <th>Valor</th>
+                        <th>Duração</th>
                     </tr>
                 </thead>
+
                 <tbody id="lista-servicos">
-                    </tbody>
+                </tbody>
+
             </table>
+
         </div>
+
     </div>
 
     <script>
@@ -60,23 +79,25 @@
             .then(res => res.json())
             .then(servicos => {
                 const corpoTabela = document.getElementById('lista-servicos');
+
                 servicos.forEach(s => {
                     corpoTabela.innerHTML += `
                         <tr>
                             <td><strong>${s.descricao}</strong></td>
-                            <td>R$ ${s.preco.toFixed(2)}</td>
-                            <td>${s.tempo_estimado}h</td>
+                            <td>R$ ${Number(s.preco).toFixed(2)}</td>
+                            <td>${s.tempo_estimado} min</td>
                         </tr>`;
                 });
             })
             .catch(err => console.error("Erro ao listar serviços:", err));
     </script>
+
 </body>
 
 <footer class="rodape">
     <div class="container-rodape">
-        <p>&copy; 2026 SisCristóvão - Sistema de Controle de Serviços</p>
-        <p>Desenvolvido para fins didáticos - Alunos do São Cristóvão</p>
+        <p>&copy; 2026 Salão Belíssima - Todos os direitos reservados.</p>
     </div>
 </footer>
+
 </html>
