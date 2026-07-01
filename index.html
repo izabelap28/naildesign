@@ -2,73 +2,72 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="estilo.css">
-    <title>SisCristóvão - Home</title>
+    <title>Salão Belíssima</title>
 </head>
+
 <body>
+
     <nav>
-        <a href="index.html">Home</a>
-        <a href="clientes.html">Clientes</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="consulta_agendamentos.html">Consulta Agendamentos</a>
+        <div class="logo">SALÃO BELÍSSIMA</div>
+
+        <div class="menu">
+            <a href="index.html">Início</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="servicos.html">Serviços</a>
+            <a href="contato.html">Contato</a>
+            <a href="agendamento.html">Agendamento</a>
+            <a href="convenios.html">Convênios</a>
+        </div>
     </nav>
 
     <header class="banner">
-        <h1>SisCristóvão</h1>
-        <p>Controle de Serviços e Agendamentos Práticos</p>
-        <img src="imagens/banner.jtif" alt="SisCristóvão 1.0" width="300">
+
+        <h1>20 ANOS</h1>
+
+        <p>CUIDANDO DA SUA BELEZA!</p>
+
     </header>
 
-    <div class="container">
-        <div class="card">
-            <h1>Bem-vindo ao SisCristóvão 1.0</h1>
-            <p>Uma plataforma didática desenvolvida para gerenciar a prestação de serviços, organizar a alocação de equipes e otimizar o fluxo de agendamentos dos alunos do São Cristóvão.</p>
-            
-            <p>Este sistema conecta a interface Web ao banco de dados SQLite para simular um ambiente real de ordens de serviço e atendimento ao cliente.</p>
-        </div>
+    <main class="container">
 
-        <div class="card" style="margin-top: 20px;">
-            <h3>🚀 Módulos Práticos do Sistema:</h3>
-            <table border="1" style="width:100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                    <tr style="background-color: #eee;">
-                        <th>Módulo</th>
-                        <th>Descrição Operacional</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>👥 <strong>Clientes</strong></td>
-                        <td>Cadastro de solicitantes e gerenciamento de contatos para assistência técnica.</td>
-                    </tr>
-                    <tr>
-                        <td>🛠️ <strong>Serviços</strong></td>
-                        <td>Catálogo de serviços disponíveis, incluindo escopo, prazos estimados e valores.</td>
-                    </tr>
-                    <tr>
-                        <td>📅 <strong>Agendamentos</strong></td>
-                        <td>Abertura de ordens de serviço, reserva de horários e alocação de alunos responsáveis.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <section class="card">
 
-        <div class="card" style="margin-top: 20px;">
-            <h3>📊 Estrutura Tecnológica</h3>
-            <ul>
-                <li><strong>Ambiente Escolar:</strong> Práticas de laboratório na Unidade São Cristóvão.</li>
-                <li><strong>Backend:</strong> Node.js com Express e API RESTful.</li>
-                <li><strong>Banco de Dados:</strong> SQLite (`siscristovao.db`) com relacionamentos mestre-detalhe.</li>
-            </ul>
-        </div>
-    </div>
+            <h2>Bem-vindo ao Salão Belíssima</h2>
+
+            <p>
+                Há 20 anos proporcionando beleza, autoestima e bem-estar.
+                Nossa equipe oferece atendimento personalizado, utilizando
+                produtos de qualidade e as melhores técnicas para valorizar
+                sua beleza.
+            </p>
+
+        </section>
+
+        <section class="galeria">
+
+            <div class="foto">
+                <img src="imagens/foto1.jpg" alt="Foto 1">
+            </div>
+
+            <div class="foto">
+                <img src="imagens/foto2.jpg" alt="Foto 2">
+            </div>
+
+            <div class="foto">
+                <img src="imagens/foto3.jpg" alt="Foto 3">
+            </div>
+
+        </section>
+
+    </main>
 
     <footer class="rodape">
-        <div class="container-rodape">
-            <p>&copy; 2026 SisCristóvão - Sistema de Controle de Serviços</p>
-            <p>Desenvolvido para fins didáticos - Alunos do São Cristóvão</p>
-        </div>
+
+        <p>&copy; 2026 Salão Belíssima - Todos os direitos reservados.</p>
+
     </footer>
+
 </body>
 </html>
