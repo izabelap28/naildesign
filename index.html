@@ -3,68 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salão Belíssima | Início</title>
+
     <link rel="stylesheet" href="estilo.css">
-    <title>Salão Belíssima</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
     <nav>
         <div class="logo">SALÃO BELÍSSIMA</div>
-
         <div class="menu">
-            <a href="index.html">Início</a>
+            <a href="index.html" class="ativo">Início</a>
             <a href="sobre.html">Sobre</a>
             <a href="servicos.html">Serviços</a>
             <a href="contato.html">Contato</a>
-            <a href="agendamento.html">Agendamento</a>
-            <a href="consultas_agendamentos.html">Consultas</a>
+            <a href="agendamentos.html">Agendamento</a>
+            <a href="consulta_agendamentos.html">Consultas</a>
         </div>
     </nav>
 
     <header class="banner">
-
         <h1>20 ANOS</h1>
-
         <p>CUIDANDO DA SUA BELEZA!</p>
-
     </header>
 
     <main class="container">
 
-        <section class="card">
-
+        <!-- Boas-vindas -->
+        <section class="card sobre-card">
+            <div class="ornamento">✦ ✦ ✦</div>
             <h2>Bem-vindo ao Salão Belíssima</h2>
+            <div class="linha-dourada"></div>
 
             <p>
-                Há 20 anos proporcionando beleza, autoestima e bem-estar.
-                Nossa equipe oferece atendimento personalizado, utilizando
-                produtos de qualidade e as melhores técnicas para valorizar
-                sua beleza.
+                Há <strong>20 anos</strong> proporcionando beleza, autoestima e bem-estar.
+                Nossa equipe oferece atendimento personalizado, utilizando produtos de qualidade
+                e as melhores técnicas para valorizar o que há de mais especial em você.
+            </p>
+            <p>
+                Em um ambiente acolhedor e sofisticado, cada detalhe é pensado para que você
+                se sinta única. Do cabelo às unhas, estamos aqui para realçar sua beleza natural.
+            </p>
+        </section>
+
+        <!-- Destaques / Serviços principais -->
+        <section class="icones">
+            <div class="item">
+                <span><i class="fa-solid fa-hand-sparkles"></i></span>
+                <h3>Unhas & Nail Design</h3>
+                <p>Alongamentos, esmaltação em gel, nail art e designs exclusivos feitos com carinho e precisão.</p>
+            </div>
+
+            <div class="item">
+                <span><i class="fa-solid fa-scissors"></i></span>
+                <h3>Cabelo</h3>
+                <p>Cortes, coloração, tratamentos e finalizações que valorizam seu estilo e a saúde dos fios.</p>
+            </div>
+
+            <div class="item">
+                <span><i class="fa-solid fa-spa"></i></span>
+                <h3>Estética & Bem-estar</h3>
+                <p>Cuidados faciais, sobrancelhas e momentos de relaxamento para renovar sua autoestima.</p>
+            </div>
+        </section>
+
+        <!-- Por que nos escolher -->
+        <section class="card">
+            <h2 style="text-align: center; margin-bottom: 10px;">Por que escolher o Belíssima?</h2>
+            <div class="linha-dourada"></div>
+
+            <div class="icones" style="margin-top: 30px;">
+                <div class="item">
+                    <span><i class="fa-solid fa-clock"></i></span>
+                    <h3>20 anos de experiência</h3>
+                    <p>Tradição e confiança construídas ao longo de duas décadas de dedicação.</p>
+                </div>
+                <div class="item">
+                    <span><i class="fa-solid fa-users"></i></span>
+                    <h3>Equipe especializada</h3>
+                    <p>Profissionais atualizados e apaixonados por transformar a sua beleza.</p>
+                </div>
+                <div class="item">
+                    <span><i class="fa-solid fa-heart"></i></span>
+                    <h3>Atendimento personalizado</h3>
+                    <p>Cada cliente é único. Ouvir você é o nosso primeiro passo.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Galeria -->
+        <section class="card" style="text-align: center;">
+            <h2>Nossos trabalhos</h2>
+            <div class="linha-dourada"></div>
+            <p style="max-width: 600px; margin: 0 auto 25px; color: #555;">
+                Um pouco do carinho e da dedicação que colocamos em cada detalhe.
             </p>
 
-      <section class="galeria">
+            <div class="galeria">
+                <div class="foto">
+                    <img src="imagens/foto1.jpg" alt="Trabalho 1 - Salão Belíssima">
+                </div>
+                <div class="foto">
+                    <img src="imagens/foto2.jpg" alt="Trabalho 2 - Salão Belíssima">
+                </div>
+                <div class="foto">
+                    <img src="imagens/foto3.jpg" alt="Trabalho 3 - Salão Belíssima">
+                </div>
+            </div>
+        </section>
 
-    <div class="foto">
-        <img src="imagens/foto1.jpg" alt="Foto 1">
-    </div>
-
-    <div class="foto">
-        <img src="imagens/foto2.jpg" alt="Foto 2">
-    </div>
-
-    <div class="foto">
-        <img src="imagens/foto3.jpg" alt="Foto 3">
-    </div>
-
-</section>
+        <!-- Chamada para ação -->
+        <section class="card" style="text-align: center;">
+            <blockquote>
+                “Sua beleza merece o melhor cuidado.”
+            </blockquote>
+            <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem;">
+                — Salão Belíssima
+            </p>
+            <br>
+            <a href="agendamentos.html" class="btn-sobre">Agendar meu horário</a>
+            <a href="servicos.html" class="btn-sobre" style="margin-left: 12px; background: transparent; color: #b68b2e; border: 2px solid #b68b2e;">Ver serviços</a>
+        </section>
 
     </main>
 
     <footer class="rodape">
-
-        <p>&copy; 2026 Salão Belíssima - Todos os direitos reservados.</p>
-
+        <p>&copy; 2026 Salão Belíssima — Todos os direitos reservados.</p>
     </footer>
 
 </body>
