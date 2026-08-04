@@ -2,61 +2,93 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salão Belíssima | Serviços</title>
+
     <link rel="stylesheet" href="estilo.css">
-    <title>Salão Belíssima - Serviços</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
     <nav>
         <div class="logo">SALÃO BELÍSSIMA</div>
-
-        <a href="index.html">Início</a>
-        <a href="sobre.html">Sobre</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="contato.html">Contato</a>
-        <a href="agendamento.html">Agendamento</a>
-        <a href="consultas.html">Consultas</a>
+        <div class="menu">
+            <a href="index.html">Início</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="servicos.html" class="ativo">Serviços</a>
+            <a href="contato.html">Contato</a>
+            <a href="agendamentos.html">Agendamento</a>
+            <a href="consulta_agendamentos.html">Consultas</a>
+        </div>
     </nav>
 
-    <header class="banner">
-        <h1>Nossos Serviços</h1>
-        <p>Beleza, autoestima e bem-estar em um só lugar.</p>
-    </header>
+    <main class="container">
 
-    <div class="container">
+        <!-- Introdução -->
+        <section class="card sobre-card">
+            <div class="ornamento">✦ ✦ ✦</div>
+            <h2>Nossos Serviços</h2>
+            <div class="linha-dourada"></div>
+            <p>
+                Oferecemos uma variedade de cuidados pensados para realçar sua beleza e autoestima.
+                Confira os serviços disponíveis ou cadastre novos no sistema.
+            </p>
+        </section>
 
-        <div class="card">
+        <!-- Categorias em destaque -->
+        <section class="icones">
+            <div class="item">
+                <span><i class="fa-solid fa-hand-sparkles"></i></span>
+                <h3>Unhas</h3>
+                <p>Alongamento, gel, nail art, manicure e pedicure com acabamento profissional.</p>
+            </div>
+            <div class="item">
+                <span><i class="fa-solid fa-scissors"></i></span>
+                <h3>Cabelo</h3>
+                <p>Cortes, coloração, hidratação, escova e tratamentos para todos os tipos de fio.</p>
+            </div>
+            <div class="item">
+                <span><i class="fa-solid fa-spa"></i></span>
+                <h3>Estética</h3>
+                <p>Sobrancelhas, limpeza de pele, design de sobrancelha e cuidados faciais.</p>
+            </div>
+        </section>
 
-            <h2>Cadastrar Serviço</h2>
+        <!-- Formulário de cadastro -->
+        <section class="card">
+            <h2><i class="fa-solid fa-plus-circle" style="color:#C9A657; margin-right:8px;"></i> Cadastrar Serviço</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">
+                Preencha os campos abaixo para adicionar um novo serviço ao catálogo.
+            </p>
 
             <form action="/salvar-servico" method="POST">
+                <label for="descricao">Nome do Serviço</label>
+                <input type="text" id="descricao" name="descricao" placeholder="Ex: Alongamento em Gel" required>
 
-                <label for="descricao">Nome do Serviço:</label>
-                <input type="text" id="descricao" name="descricao" placeholder="Ex: Corte Feminino" required>
-
-                <label for="preco">Valor (R$):</label>
+                <label for="preco">Valor (R$)</label>
                 <input type="number" step="0.01" id="preco" name="preco" placeholder="0.00" required>
 
-                <label for="tempo_estimado">Tempo Estimado (minutos):</label>
+                <label for="tempo_estimado">Tempo Estimado (minutos)</label>
                 <input type="number" id="tempo_estimado" name="tempo_estimado" placeholder="Ex: 60" required>
 
-                <button type="submit">Salvar Serviço</button>
-
+                <button type="submit">
+                    <i class="fa-solid fa-check"></i> Salvar Serviço
+                </button>
             </form>
+        </section>
 
-        </div>
-
-        <div class="card" style="margin-top:20px;">
-
-            <h2>Lista de Serviços</h2>
-
-            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">
-                Confira os serviços oferecidos pelo Salão Belíssima.
+        <!-- Lista de serviços -->
+        <section class="card">
+            <h2><i class="fa-solid fa-list" style="color:#C9A657; margin-right:8px;"></i> Lista de Serviços</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">
+                Serviços cadastrados no Salão Belíssima.
             </p>
 
             <table>
-
                 <thead>
                     <tr>
                         <th>Serviço</th>
@@ -64,21 +96,48 @@
                         <th>Duração</th>
                     </tr>
                 </thead>
-
                 <tbody id="lista-servicos">
+                    <tr>
+                        <td colspan="3" style="text-align:center; color:#888;">Carregando serviços...</td>
+                    </tr>
                 </tbody>
-
             </table>
+        </section>
 
-        </div>
+        <!-- CTA -->
+        <section class="card" style="text-align: center;">
+            <blockquote>
+                “O cuidado que você merece, no tempo que você precisa.”
+            </blockquote>
+            <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem;">
+                — Salão Belíssima
+            </p>
+            <br>
+            <a href="agendamentos.html" class="btn-sobre">Agendar horário</a>
+        </section>
 
-    </div>
+    </main>
+
+    <footer class="rodape">
+        <p>&copy; 2026 Salão Belíssima — Todos os direitos reservados.</p>
+    </footer>
 
     <script>
         fetch('/listar-servicos')
             .then(res => res.json())
             .then(servicos => {
                 const corpoTabela = document.getElementById('lista-servicos');
+                corpoTabela.innerHTML = '';
+
+                if (!servicos || servicos.length === 0) {
+                    corpoTabela.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align:center; color:#888;">
+                                Nenhum serviço cadastrado ainda.
+                            </td>
+                        </tr>`;
+                    return;
+                }
 
                 servicos.forEach(s => {
                     corpoTabela.innerHTML += `
@@ -89,15 +148,16 @@
                         </tr>`;
                 });
             })
-            .catch(err => console.error("Erro ao listar serviços:", err));
+            .catch(err => {
+                console.error("Erro ao listar serviços:", err);
+                document.getElementById('lista-servicos').innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align:center; color:#888;">
+                            Não foi possível carregar os serviços. Verifique se o servidor está rodando.
+                        </td>
+                    </tr>`;
+            });
     </script>
 
 </body>
-
-<footer class="rodape">
-    <div class="container-rodape">
-        <p>&copy; 2026 Salão Belíssima - Todos os direitos reservados.</p>
-    </div>
-</footer>
-
 </html>
