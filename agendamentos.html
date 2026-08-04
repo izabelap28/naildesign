@@ -2,93 +2,124 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salão Belíssima | Agendamento</title>
+
     <link rel="stylesheet" href="estilo.css">
-    <title>SisCristóvão - Lançar Agendamento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
+
 <body>
+
     <nav>
-        <a href="index.html">Home</a>
-        <a href="clientes.html">Clientes</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="consulta_agendamentos.html">Consulta Agendamentos</a>
+        <div class="logo">SALÃO BELÍSSIMA</div>
+        <div class="menu">
+            <a href="index.html">Início</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="servicos.html">Serviços</a>
+            <a href="contato.html">Contato</a>
+            <a href="agendamentos.html" class="ativo">Agendamento</a>
+            <a href="consulta_agendamentos.html">Consultas</a>
+        </div>
     </nav>
 
-    <header class="banner">
-        <h1>Controle de Agendamentos</h1>
-        <p>Abra ordens de serviço e reserve horários para atendimento</p>
-    </header>
+    <main class="container">
 
-    <div class="container">
-        <div style="margin-bottom: 20px;">
-            <button onclick="window.location.href='consulta_agendamentos.html'" style="background: #555; width: auto; padding: 10px 20px;">
-                🔍 Ver Histórico de Agendamentos
-            </button>
-        </div>
+        <!-- Introdução -->
+        <section class="card sobre-card">
+            <div class="ornamento">✦ ✦ ✦</div>
+            <h2>Agendar Atendimento</h2>
+            <div class="linha-dourada"></div>
+            <p>
+                Selecione o cliente, a data e os serviços desejados para criar um novo agendamento.
+            </p>
+            <p style="margin-top: 15px;">
+                <a href="consulta_agendamentos.html" class="btn-sobre" style="font-size: 0.95rem; padding: 12px 28px;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Ver histórico de agendamentos
+                </a>
+            </p>
+        </section>
 
-        <div class="card">
-            <h2>Nova Ordem de Serviço / Agendamento</h2>
+        <!-- Formulário principal -->
+        <section class="card">
+            <h2><i class="fa-solid fa-calendar-plus" style="color:#C9A657; margin-right:8px;"></i> Novo Agendamento</h2>
 
-            <label for="selCliente">Cliente / Solicitante:</label>
+            <label for="selCliente">Cliente</label>
             <select id="selCliente">
-                <option value="">Selecione o Cliente...</option>
+                <option value="">Selecione o cliente...</option>
             </select>
 
-            <label for="data_agendamento">Data e Hora do Atendimento:</label>
+            <label for="data_agendamento">Data e Hora</label>
             <input type="datetime-local" id="data_agendamento" required>
 
-            <label for="responsavel">Aluno / Equipe Responsável:</label>
-            <input type="text" id="responsavel" placeholder="Ex: Grupo 2 (Ana e Pedro)" required>
+            <label for="responsavel">Responsável / Profissional</label>
+            <input type="text" id="responsavel" placeholder="Ex: Maria, Ana..." required>
 
-            <hr>
+            <hr style="border: none; border-top: 1px solid #E7D8BF; margin: 30px 0;">
 
-            <h3>🛠️ Adicionar Serviços ao Agendamento</h3>
-            
-            <label for="selServico">Selecione o Serviço:</label>
+            <h3 style="color: var(--primary-blue); margin-bottom: 15px;">
+                <i class="fa-solid fa-plus" style="color:#C9A657;"></i> Adicionar Serviços
+            </h3>
+
+            <label for="selServico">Serviço</label>
             <select id="selServico" onchange="atualizarDadosServico()">
                 <option value="">Selecione um serviço...</option>
             </select>
 
-            <div style="display: flex; gap: 15px; margin-top: 5px;">
-                <div style="flex: 1;">
-                    <label>Preço Sugerido (R$):</label>
-                    <input type="number" id="txtPreco" readonly style="background: #eee;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 140px;">
+                    <label>Preço (R$)</label>
+                    <input type="number" id="txtPreco" readonly style="background: #F5EFE6;">
                 </div>
-                <div style="flex: 1;">
-                    <label>Tempo Est. (Horas):</label>
-                    <input type="number" id="txtTempo" readonly style="background: #eee;">
+                <div style="flex: 1; min-width: 140px;">
+                    <label>Tempo (min)</label>
+                    <input type="number" id="txtTempo" readonly style="background: #F5EFE6;">
                 </div>
             </div>
 
-            <button type="button" onclick="adicionarServicoNaLista()" style="background-color: var(--primary-blue); margin-top: 15px;">
-                ➕ Incluir Serviço no Agendamento
+            <button type="button" onclick="adicionarServicoNaLista()" style="margin-top: 10px;">
+                <i class="fa-solid fa-cart-plus"></i> Incluir serviço
             </button>
-        </div>
+        </section>
 
-        <div class="card" style="margin-top: 20px;">
-            <h2>Serviços Inclusos neste Agendamento</h2>
+        <!-- Carrinho de serviços -->
+        <section class="card">
+            <h2><i class="fa-solid fa-list-check" style="color:#C9A657; margin-right:8px;"></i> Serviços do Agendamento</h2>
+
             <table>
                 <thead>
                     <tr>
                         <th>Serviço</th>
-                        <th>Tempo Est.</th>
-                        <th>Preço (R$)</th>
+                        <th>Tempo</th>
+                        <th>Preço</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="lista-servicos-agendados">
-                    </tbody>
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#888;">Nenhum serviço adicionado ainda.</td>
+                    </tr>
+                </tbody>
             </table>
 
-            <div style="text-align: right; margin-top: 15px;">
-                <h3 id="txtTotal">Total Geral: R$ 0.00</h3>
-                <h4 id="txtTempoTotal" style="color: var(--accent-red);">Tempo Total Estimado: 0h</h4>
+            <div style="text-align: right; margin-top: 20px;">
+                <h3 id="txtTotal" style="color: var(--primary-blue); margin: 5px 0;">Total: R$ 0,00</h3>
+                <p id="txtTempoTotal" style="color: var(--text-muted); margin: 5px 0;">Tempo estimado: 0 min</p>
             </div>
 
-            <button type="button" onclick="finalizarAgendamento()" style="margin-top: 15px; background-color: var(--accent-red);">
-                💾 Salvar e Confirmar Agendamento
+            <button type="button" onclick="finalizarAgendamento()" style="margin-top: 20px; background: #b68b2e;">
+                <i class="fa-solid fa-check"></i> Confirmar Agendamento
             </button>
-        </div>
-    </div>
+        </section>
+
+    </main>
+
+    <footer class="rodape">
+        <p>&copy; 2026 Salão Belíssima — Todos os direitos reservados.</p>
+    </footer>
 
     <script>
         let listaServicosDb = [];
@@ -96,12 +127,158 @@
         let totalGeral = 0;
         let tempoTotalGeral = 0;
 
-        // Carrega os dados iniciais do banco ao abrir a página
-        window.onload = function() {
-            // Buscar clientes para o Select
+        window.onload = function () {
+            // Clientes
             fetch('/listar-clientes')
                 .then(res => res.json())
                 .then(clientes => {
                     const sel = document.getElementById('selCliente');
                     clientes.forEach(c => {
-                        sel.innerHTML += `<option value="${c.id}">${c.nome} (${c.cpf})
+                        sel.innerHTML += `<option value="${c.id}">${c.nome} (${c.cpf})</option>`;
+                    });
+                })
+                .catch(err => console.error('Erro ao carregar clientes:', err));
+
+            // Serviços
+            fetch('/listar-servicos')
+                .then(res => res.json())
+                .then(servicos => {
+                    listaServicosDb = servicos;
+                    const sel = document.getElementById('selServico');
+                    servicos.forEach(s => {
+                        sel.innerHTML += `<option value="${s.id}">${s.descricao}</option>`;
+                    });
+                })
+                .catch(err => console.error('Erro ao carregar serviços:', err));
+        };
+
+        function atualizarDadosServico() {
+            const id = document.getElementById('selServico').value;
+            const servico = listaServicosDb.find(s => s.id == id);
+            if (servico) {
+                document.getElementById('txtPreco').value = Number(servico.preco).toFixed(2);
+                document.getElementById('txtTempo').value = servico.tempo_estimado;
+            } else {
+                document.getElementById('txtPreco').value = '';
+                document.getElementById('txtTempo').value = '';
+            }
+        }
+
+        function adicionarServicoNaLista() {
+            const id = document.getElementById('selServico').value;
+            if (!id) {
+                alert('Selecione um serviço.');
+                return;
+            }
+            const servico = listaServicosDb.find(s => s.id == id);
+            if (!servico) return;
+
+            // Evita duplicar o mesmo serviço
+            if (carrinhoServicos.some(s => s.id == servico.id)) {
+                alert('Este serviço já foi adicionado.');
+                return;
+            }
+
+            carrinhoServicos.push({
+                id: servico.id,
+                descricao: servico.descricao,
+                preco: Number(servico.preco),
+                tempo: Number(servico.tempo_estimado)
+            });
+
+            totalGeral += Number(servico.preco);
+            tempoTotalGeral += Number(servico.tempo_estimado);
+            atualizarTabela();
+        }
+
+        function removerServico(index) {
+            totalGeral -= carrinhoServicos[index].preco;
+            tempoTotalGeral -= carrinhoServicos[index].tempo;
+            carrinhoServicos.splice(index, 1);
+            atualizarTabela();
+        }
+
+        function atualizarTabela() {
+            const tbody = document.getElementById('lista-servicos-agendados');
+            tbody.innerHTML = '';
+
+            if (carrinhoServicos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#888;">Nenhum serviço adicionado ainda.</td>
+                    </tr>`;
+            } else {
+                carrinhoServicos.forEach((s, i) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${s.descricao}</strong></td>
+                            <td>${s.tempo} min</td>
+                            <td>R$ ${s.preco.toFixed(2)}</td>
+                            <td>
+                                <button type="button" onclick="removerServico(${i})"
+                                    style="width:auto; padding:6px 12px; background:#c0392b; font-size:0.85rem;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            document.getElementById('txtTotal').innerText = `Total: R$ ${totalGeral.toFixed(2)}`;
+            document.getElementById('txtTempoTotal').innerText = `Tempo estimado: ${tempoTotalGeral} min`;
+        }
+
+        function finalizarAgendamento() {
+            const clienteId = document.getElementById('selCliente').value;
+            const data = document.getElementById('data_agendamento').value;
+            const responsavel = document.getElementById('responsavel').value.trim();
+
+            if (!clienteId) {
+                alert('Selecione o cliente.');
+                return;
+            }
+            if (!data) {
+                alert('Informe a data e hora.');
+                return;
+            }
+            if (!responsavel) {
+                alert('Informe o responsável.');
+                return;
+            }
+            if (carrinhoServicos.length === 0) {
+                alert('Adicione pelo menos um serviço.');
+                return;
+            }
+
+            const payload = {
+                cliente_id: Number(clienteId),
+                data: data,
+                responsavel: responsavel,
+                total: totalGeral,
+                tempo_total: tempoTotalGeral,
+                servicos: carrinhoServicos.map(s => ({ id: s.id, preco: s.preco }))
+            };
+
+            fetch('/finalizar-agendamento', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Agendamento confirmado com sucesso!');
+                    window.location.href = 'consulta_agendamentos.html';
+                } else {
+                    alert('Erro ao salvar: ' + (result.error || 'tente novamente'));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Erro de conexão. Verifique se o servidor está rodando.');
+            });
+        }
+    </script>
+
+</body>
+</html>
