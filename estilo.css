@@ -314,3 +314,58 @@ blockquote{
     border-bottom:3px solid #C9A657;
     border-right:3px solid #C9A657;
 }
+
+/* Página Contato */
+
+.contato{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    min-height:65vh;
+    text-align:center;
+    padding:40px 20px;
+}
+
+.contato h2{
+    font-size:60px;
+    color:#b8860b;
+    margin-bottom:40px;
+    letter-spacing:3px;
+}
+
+.contato p{
+    font-size:24px;
+    color:#555;
+    margin-bottom:30px;
+}
+
+.whatsapp{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border:2px solid #d4af37;
+    border-radius:40px;
+    padding:15px 35px;
+    font-size:26px;
+    color:#b8860b;
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+    margin-bottom:40px;
+}
+
+.whatsapp i{
+    font-size:34px;
+}
+
+.agende{
+    font-size:26px;
+}
+
+footer{
+    text-align:center;
+    padding:20px;
+    margin-top:40px;
+    border-top:1px solid #d4af37;
+    color:#666;
+}
