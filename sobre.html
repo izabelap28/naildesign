@@ -1,60 +1,89 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salão Belíssima | Sobre</title>
 
     <link rel="stylesheet" href="estilo.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<header class="cabecalho">
-
-    <h1>Salão Belíssima</h1>
-
-    <nav class="menu">
-        <a href="index.html">Início</a>
-        <a href="sobre.html" class="ativo">Sobre</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="contato.html">Contato</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="consultas.html">Consultas</a>
+    <nav>
+        <div class="logo">SALÃO BELÍSSIMA</div>
+        <div class="menu">
+            <a href="index.html">Início</a>
+            <a href="sobre.html" class="ativo">Sobre</a>
+            <a href="servicos.html">Serviços</a>
+            <a href="contato.html">Contato</a>
+            <a href="agendamentos.html">Agendamento</a>
+            <a href="consulta_agendamentos.html">Consultas</a>
+        </div>
     </nav>
 
-</header>
+    <main class="container">
 
-<main class="sobre">
+        <section class="card sobre-card">
+            <div class="ornamento">✦ ✦ ✦</div>
+            <h2>Sobre o Salão Belíssima</h2>
+            <div class="linha-dourada"></div>
 
-    <h2>SOBRE</h2>
+            <p>
+                Há duas décadas, o <strong>Salão Belíssima</strong> nasceu com um propósito simples e verdadeiro:
+                fazer cada cliente se sentir especial. Aqui, beleza e autoestima caminham juntas.
+            </p>
+            <p>
+                Com uma equipe apaixonada e em constante atualização, oferecemos atendimento personalizado,
+                produtos de alta qualidade e as técnicas mais modernas do mercado, tudo em um ambiente
+                acolhedor e sofisticado.
+            </p>
+            <p>
+                Seja para um retoque rápido ou uma transformação completa, nosso compromisso é o mesmo:
+                realçar o que há de mais bonito em você.
+            </p>
+        </section>
 
-    <div class="texto-sobre">
+        <section class="icones">
+            <div class="item">
+                <span><i class="fa-solid fa-heart"></i></span>
+                <h3>Carinho</h3>
+                <p>Cada atendimento é feito com dedicação e atenção aos detalhes, para que você se sinta cuidada do início ao fim.</p>
+            </div>
 
-        <p>
-            <strong>Bem-vindo ao nosso salão!</strong>
-        </p>
+            <div class="item">
+                <span><i class="fa-solid fa-star"></i></span>
+                <h3>Qualidade</h3>
+                <p>Utilizamos produtos profissionais e técnicas atualizadas para garantir resultados impecáveis e duradouros.</p>
+            </div>
 
-        <p>
-            Aqui cada cliente é atendido com carinho, atenção e dedicação.
-        </p>
+            <div class="item">
+                <span><i class="fa-solid fa-spa"></i></span>
+                <h3>Bem-estar</h3>
+                <p>Criamos um espaço relaxante onde você pode desconectar e aproveitar um momento só seu.</p>
+            </div>
+        </section>
 
-        <p>
-            Somos um salão dedicado a realçar sua beleza e autoestima,
-            oferecendo atendimento de qualidade, carinho e profissionalismo
-            em um ambiente acolhedor.
-        </p>
+        <section class="card" style="text-align: center;">
+            <blockquote>
+                “Beleza é cuidar de si com amor.”
+            </blockquote>
+            <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem;">
+                — Equipe Salão Belíssima
+            </p>
+            <br>
+            <a href="agendamentos.html" class="btn-sobre">Agendar meu horário</a>
+        </section>
 
-    </div>
+    </main>
 
-</main>
-
-<footer>
-
-    © 2026 Salão Belíssima - Todos os direitos reservados.
-
-</footer>
+    <footer class="rodape">
+        <p>&copy; 2026 Salão Belíssima — Todos os direitos reservados.</p>
+    </footer>
 
 </body>
 </html>

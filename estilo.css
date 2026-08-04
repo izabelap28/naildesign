@@ -64,6 +64,11 @@ nav a:hover {
     background: var(--accent-red);
 }
 
+nav a.ativo {
+    background: var(--accent-red);
+    color: #fff;
+}
+
 /* ==========================================================================
    BANNER
    ========================================================================== */
@@ -74,14 +79,14 @@ nav a:hover {
 }
 
 .banner h1 {
-    font-size: 5rem;
+    font-size: clamp(2.5rem, 8vw, 5rem);
     margin: 0;
     color: var(--primary-blue);
     font-family: "Playfair Display", serif;
 }
 
 .banner p {
-    font-size: 1.8rem;
+    font-size: clamp(1.1rem, 3vw, 1.8rem);
     margin-top: 15px;
     color: var(--text-dark);
     letter-spacing: 2px;
@@ -230,6 +235,17 @@ td button {
 .sobre-card{
     text-align:center;
     position:relative;
+    border-left: none;
+    padding: 50px 40px;
+}
+
+.sobre-card p {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: justify;
+    color: #555;
+    font-size: 1.05rem;
 }
 
 .ornamento{
@@ -272,6 +288,11 @@ td button {
 .item span{
     font-size:42px;
     color:#C9A657;
+    display: inline-block;
+}
+
+.item span i {
+    font-size: 2.2rem;
 }
 
 .item h3{
@@ -448,3 +469,4 @@ footer{
     font-size:16px;
 }
 
+}
