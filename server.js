@@ -83,11 +83,19 @@ app.get('/listar-clientes', (req, res) => {
 // Salvar um novo serviço no catálogo
 app.post('/salvar-servico', (req, res) => {
     const { descricao, preco, tempo_estimado } = req.body;
+
+    if (!descricao || preco === undefined || preco === '' || tempo_estimado === undefined || tempo_estimado === '') {
+        return res.status(400).json({ success: false, error: 'Preencha todos os campos.' });
+    }
+
     const sql = `INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)`;
-    
-    db.run(sql, [descricao, parseFloat(preco), parseInt(tempo_estimado)], (err) => {
-        if (err) return res.status(500).send("Erro ao salvar serviço: " + err.message);
-        res.redirect('/servicos.html');
+
+    db.run(sql, [descricao, parseFloat(preco), parseInt(tempo_estimado)], function(err) {
+        if (err) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        // Responde JSON (usado pelo formulário via fetch)
+        res.json({ success: true, id: this.lastID });
     });
 });
 
