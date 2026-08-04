@@ -28,7 +28,6 @@
 
     <main class="container">
 
-        <!-- Introdução -->
         <section class="card sobre-card">
             <div class="ornamento">✦ ✦ ✦</div>
             <h2>Nossos Serviços</h2>
@@ -39,7 +38,6 @@
             </p>
         </section>
 
-        <!-- Categorias em destaque -->
         <section class="icones">
             <div class="item">
                 <span><i class="fa-solid fa-hand-sparkles"></i></span>
@@ -58,30 +56,35 @@
             </div>
         </section>
 
-        <!-- Formulário de cadastro -->
         <section class="card">
             <h2><i class="fa-solid fa-plus-circle" style="color:#C9A657; margin-right:8px;"></i> Cadastrar Serviço</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">
                 Preencha os campos abaixo para adicionar um novo serviço ao catálogo.
             </p>
 
-            <form action="/salvar-servico" method="POST">
+            <div id="msg-sucesso" style="display:none; background:#d4edda; color:#155724; padding:12px 16px; border-radius:10px; margin-bottom:15px;">
+                <i class="fa-solid fa-check-circle"></i> Serviço cadastrado com sucesso!
+            </div>
+            <div id="msg-erro" style="display:none; background:#f8d7da; color:#721c24; padding:12px 16px; border-radius:10px; margin-bottom:15px;">
+                <i class="fa-solid fa-exclamation-circle"></i> <span id="msg-erro-texto">Erro ao salvar.</span>
+            </div>
+
+            <form id="form-servico" onsubmit="return salvarServico(event)">
                 <label for="descricao">Nome do Serviço</label>
                 <input type="text" id="descricao" name="descricao" placeholder="Ex: Alongamento em Gel" required>
 
                 <label for="preco">Valor (R$)</label>
-                <input type="number" step="0.01" id="preco" name="preco" placeholder="0.00" required>
+                <input type="number" step="0.01" min="0" id="preco" name="preco" placeholder="0.00" required>
 
                 <label for="tempo_estimado">Tempo Estimado (minutos)</label>
-                <input type="number" id="tempo_estimado" name="tempo_estimado" placeholder="Ex: 60" required>
+                <input type="number" min="1" id="tempo_estimado" name="tempo_estimado" placeholder="Ex: 60" required>
 
-                <button type="submit">
+                <button type="submit" id="btn-salvar">
                     <i class="fa-solid fa-check"></i> Salvar Serviço
                 </button>
             </form>
         </section>
 
-        <!-- Lista de serviços -->
         <section class="card">
             <h2><i class="fa-solid fa-list" style="color:#C9A657; margin-right:8px;"></i> Lista de Serviços</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">
@@ -104,7 +107,6 @@
             </table>
         </section>
 
-        <!-- CTA -->
         <section class="card" style="text-align: center;">
             <blockquote>
                 “O cuidado que você merece, no tempo que você precisa.”
@@ -123,40 +125,108 @@
     </footer>
 
     <script>
-        fetch('/listar-servicos')
-            .then(res => res.json())
-            .then(servicos => {
-                const corpoTabela = document.getElementById('lista-servicos');
-                corpoTabela.innerHTML = '';
+        function carregarServicos() {
+            fetch('/listar-servicos')
+                .then(res => res.json())
+                .then(servicos => {
+                    const corpoTabela = document.getElementById('lista-servicos');
+                    corpoTabela.innerHTML = '';
 
-                if (!servicos || servicos.length === 0) {
-                    corpoTabela.innerHTML = `
+                    if (!servicos || servicos.length === 0) {
+                        corpoTabela.innerHTML = `
+                            <tr>
+                                <td colspan="3" style="text-align:center; color:#888;">
+                                    Nenhum serviço cadastrado ainda.
+                                </td>
+                            </tr>`;
+                        return;
+                    }
+
+                    servicos.forEach(s => {
+                        corpoTabela.innerHTML += `
+                            <tr>
+                                <td><strong>${s.descricao}</strong></td>
+                                <td>R$ ${Number(s.preco).toFixed(2)}</td>
+                                <td>${s.tempo_estimado} min</td>
+                            </tr>`;
+                    });
+                })
+                .catch(err => {
+                    console.error("Erro ao listar serviços:", err);
+                    document.getElementById('lista-servicos').innerHTML = `
                         <tr>
                             <td colspan="3" style="text-align:center; color:#888;">
-                                Nenhum serviço cadastrado ainda.
+                                Não foi possível carregar. Abra o site pelo servidor (porta 3000).
                             </td>
                         </tr>`;
-                    return;
-                }
-
-                servicos.forEach(s => {
-                    corpoTabela.innerHTML += `
-                        <tr>
-                            <td><strong>${s.descricao}</strong></td>
-                            <td>R$ ${Number(s.preco).toFixed(2)}</td>
-                            <td>${s.tempo_estimado} min</td>
-                        </tr>`;
                 });
+        }
+
+        function salvarServico(event) {
+            event.preventDefault();
+
+            const descricao = document.getElementById('descricao').value.trim();
+            const preco = document.getElementById('preco').value;
+            const tempo_estimado = document.getElementById('tempo_estimado').value;
+
+            if (!descricao || !preco || !tempo_estimado) {
+                mostrarErro('Preencha todos os campos.');
+                return false;
+            }
+
+            const btn = document.getElementById('btn-salvar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+            const body = new URLSearchParams();
+            body.append('descricao', descricao);
+            body.append('preco', preco);
+            body.append('tempo_estimado', tempo_estimado);
+
+            fetch('/salvar-servico', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: body.toString()
+            })
+            .then(res => res.json().then(data => ({ ok: res.ok, data })))
+            .then(({ ok, data }) => {
+                if (ok && data.success) {
+                    document.getElementById('form-servico').reset();
+                    document.getElementById('msg-erro').style.display = 'none';
+                    document.getElementById('msg-sucesso').style.display = 'block';
+                    carregarServicos();
+                    setTimeout(() => {
+                        document.getElementById('msg-sucesso').style.display = 'none';
+                    }, 3000);
+                } else {
+                    throw new Error((data && data.error) || 'Erro ao salvar');
+                }
             })
             .catch(err => {
-                console.error("Erro ao listar serviços:", err);
-                document.getElementById('lista-servicos').innerHTML = `
-                    <tr>
-                        <td colspan="3" style="text-align:center; color:#888;">
-                            Não foi possível carregar os serviços. Verifique se o servidor está rodando.
-                        </td>
-                    </tr>`;
+                console.error(err);
+                mostrarErro(
+                    'Não foi possível salvar. Certifique-se de que o servidor está rodando: <br>' +
+                    '<code>node server.js</code> e acesse <code>http://localhost:3000/servicos.html</code>'
+                );
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Salvar Serviço';
             });
+
+            return false;
+        }
+
+        function mostrarErro(texto) {
+            document.getElementById('msg-sucesso').style.display = 'none';
+            document.getElementById('msg-erro-texto').innerHTML = texto;
+            document.getElementById('msg-erro').style.display = 'block';
+        }
+
+        carregarServicos();
     </script>
 
 </body>
