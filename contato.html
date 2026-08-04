@@ -1,74 +1,121 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salão Belíssima | Contato</title>
 
     <link rel="stylesheet" href="estilo.css">
-
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<header>
-
-    <h1>SALÃO BELÍSSIMA</h1>
-
     <nav>
-        <a href="index.html">Início</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="contato.html" class="ativo">Contato</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="consultas.html">Consultas</a>
+        <div class="logo">SALÃO BELÍSSIMA</div>
+        <div class="menu">
+            <a href="index.html">Início</a>
+            <a href="sobre.html">Sobre</a>
+            <a href="servicos.html">Serviços</a>
+            <a href="contato.html" class="ativo">Contato</a>
+            <a href="agendamentos.html">Agendamento</a>
+            <a href="consulta_agendamentos.html">Consultas</a>
+        </div>
     </nav>
 
-</header>
+    <main class="container">
 
+        <!-- Introdução -->
+        <section class="card sobre-card">
+            <div class="ornamento">✦ ✦ ✦</div>
+            <h2>Fale Conosco</h2>
+            <div class="linha-dourada"></div>
+            <p>
+                Estamos prontos para atender você. Tire dúvidas, peça informações
+                ou agende seu horário — será um prazer cuidar da sua beleza.
+            </p>
+        </section>
 
-<section class="contato">
+        <!-- Cards de contato -->
+        <section class="icones">
+            <div class="item">
+                <span><i class="fa-brands fa-whatsapp"></i></span>
+                <h3>WhatsApp</h3>
+                <p>(46) 99925-4813</p>
+                <p style="margin-top: 12px;">
+                    <a href="https://wa.me/5546999254813" target="_blank" rel="noopener"
+                       style="color: #25D366; font-weight: 600; text-decoration: none;">
+                        Enviar mensagem →
+                    </a>
+                </p>
+            </div>
 
-    <h2>CONTATO</h2>
+            <div class="item">
+                <span><i class="fa-solid fa-envelope"></i></span>
+                <h3>E-mail</h3>
+                <p>contato@salaobelissima.com</p>
+                <p style="margin-top: 12px;">
+                    <a href="mailto:contato@salaobelissima.com"
+                       style="color: #6F4E37; font-weight: 600; text-decoration: none;">
+                        Enviar e-mail →
+                    </a>
+                </p>
+            </div>
 
-    <p class="texto">
-        Entre em contato conosco para tirar dúvidas, obter mais informações ou realizar seu agendamento.
-    </p>
+            <div class="item">
+                <span><i class="fa-solid fa-location-dot"></i></span>
+                <h3>Endereço</h3>
+                <p>Capanema - PR</p>
+                <p style="margin-top: 12px; color: var(--text-muted); font-size: 0.9rem;">
+                    Atendimento com hora marcada
+                </p>
+            </div>
+        </section>
 
-    <div class="cards">
+        <!-- Horário / info extra -->
+        <section class="card">
+            <h2 style="text-align: center;"><i class="fa-solid fa-clock" style="color:#C9A657; margin-right:8px;"></i> Horário de Atendimento</h2>
+            <div class="linha-dourada"></div>
 
-        <div class="card">
-            <i class="fa-brands fa-whatsapp"></i>
-            <h3>WhatsApp</h3>
-            <p>(46) 99925-4813</p>
-        </div>
+            <div style="max-width: 420px; margin: 0 auto; text-align: center;">
+                <p style="line-height: 2; color: #555;">
+                    <strong>Segunda a Sexta</strong><br>
+                    09h às 12h · 13h30 às 19h
+                </p>
+                <p style="line-height: 2; color: #555; margin-top: 15px;">
+                    <strong>Sábado</strong><br>
+                    09h às 14h
+                </p>
+                <p style="margin-top: 20px; color: var(--text-muted); font-size: 0.95rem;">
+                    Domingo e feriados: fechado
+                </p>
+            </div>
+        </section>
 
-        <div class="card">
-            <i class="fa-solid fa-envelope"></i>
-            <h3>E-mail</h3>
-            <p>contato@salaobelissima.com</p>
-        </div>
+        <!-- CTA -->
+        <section class="card" style="text-align: center;">
+            <blockquote>
+                “Estamos a uma mensagem de distância.”
+            </blockquote>
+            <p style="margin-top: 10px; color: var(--text-muted); font-size: 0.95rem;">
+                — Salão Belíssima
+            </p>
+            <br>
+            <a href="agendamentos.html" class="btn-sobre">Agendar meu horário</a>
+            <a href="https://wa.me/5546999254813" target="_blank" rel="noopener" class="btn-sobre"
+               style="margin-left: 12px; background: #25D366; border: none;">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+            </a>
+        </section>
 
-        <div class="card">
-            <i class="fa-solid fa-location-dot"></i>
-            <h3>Endereço</h3>
-            <p>Capanema - PR</p>
-        </div>
+    </main>
 
-    </div>
-
-    <a href="agendamentos.html" class="botao">
-        Agendar Horário
-    </a>
-
-</section>
-
-<footer>
-
-    © 2026 Salão Belíssima - Todos os direitos reservados.
-
-</footer>
+    <footer class="rodape">
+        <p>&copy; 2026 Salão Belíssima — Todos os direitos reservados.</p>
+    </footer>
 
 </body>
 </html>
