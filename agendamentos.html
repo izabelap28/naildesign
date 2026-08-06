@@ -28,13 +28,12 @@
 
     <main class="container">
 
-        <!-- Introdução -->
         <section class="card sobre-card">
             <div class="ornamento">✦ ✦ ✦</div>
             <h2>Agendar Atendimento</h2>
             <div class="linha-dourada"></div>
             <p>
-                Selecione o cliente, a data e os serviços desejados para criar um novo agendamento.
+                Selecione a data e os serviços desejados para criar um novo agendamento.
             </p>
             <p style="margin-top: 15px;">
                 <a href="consulta_agendamentos.html" class="btn-sobre" style="font-size: 0.95rem; padding: 12px 28px;">
@@ -43,20 +42,21 @@
             </p>
         </section>
 
-        <!-- Formulário principal -->
         <section class="card">
             <h2><i class="fa-solid fa-calendar-plus" style="color:#C9A657; margin-right:8px;"></i> Novo Agendamento</h2>
 
-            <label for="selCliente">Cliente</label>
-            <select id="selCliente">
-                <option value="">Selecione o cliente...</option>
-            </select>
+            <label for="nomeCliente">Nome da Cliente</label>
+            <input type="text" id="nomeCliente" placeholder="Digite o seu nome" required>
 
             <label for="data_agendamento">Data e Hora</label>
             <input type="datetime-local" id="data_agendamento" required>
 
             <label for="responsavel">Responsável / Profissional</label>
-            <input type="text" id="responsavel" placeholder="Ex: Maria, Ana..." required>
+            <select id="responsavel" required>
+                <option value="">Selecione o profissional...</option>
+                <option value="Izabella">Izabella</option>
+                <option value="Veloni">Veloni</option>
+            </select>
 
             <hr style="border: none; border-top: 1px solid #E7D8BF; margin: 30px 0;">
 
@@ -85,7 +85,6 @@
             </button>
         </section>
 
-        <!-- Carrinho de serviços -->
         <section class="card">
             <h2><i class="fa-solid fa-list-check" style="color:#C9A657; margin-right:8px;"></i> Serviços do Agendamento</h2>
 
@@ -128,18 +127,6 @@
         let tempoTotalGeral = 0;
 
         window.onload = function () {
-            // Clientes
-            fetch('/listar-clientes')
-                .then(res => res.json())
-                .then(clientes => {
-                    const sel = document.getElementById('selCliente');
-                    clientes.forEach(c => {
-                        sel.innerHTML += `<option value="${c.id}">${c.nome} (${c.cpf})</option>`;
-                    });
-                })
-                .catch(err => console.error('Erro ao carregar clientes:', err));
-
-            // Serviços
             fetch('/listar-servicos')
                 .then(res => res.json())
                 .then(servicos => {
@@ -173,7 +160,6 @@
             const servico = listaServicosDb.find(s => s.id == id);
             if (!servico) return;
 
-            // Evita duplicar o mesmo serviço
             if (carrinhoServicos.some(s => s.id == servico.id)) {
                 alert('Este serviço já foi adicionado.');
                 return;
@@ -229,12 +215,12 @@
         }
 
         function finalizarAgendamento() {
-            const clienteId = document.getElementById('selCliente').value;
+            const nomeCliente = document.getElementById('nomeCliente').value.trim();
             const data = document.getElementById('data_agendamento').value;
-            const responsavel = document.getElementById('responsavel').value.trim();
+            const responsavel = document.getElementById('responsavel').value;
 
-            if (!clienteId) {
-                alert('Selecione o cliente.');
+            if (!nomeCliente) {
+                alert('Digite o nome da cliente.');
                 return;
             }
             if (!data) {
@@ -242,7 +228,7 @@
                 return;
             }
             if (!responsavel) {
-                alert('Informe o responsável.');
+                alert('Selecione o profissional.');
                 return;
             }
             if (carrinhoServicos.length === 0) {
@@ -251,7 +237,7 @@
             }
 
             const payload = {
-                cliente_id: Number(clienteId),
+                nome_cliente: nomeCliente,
                 data: data,
                 responsavel: responsavel,
                 total: totalGeral,

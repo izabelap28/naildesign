@@ -114,32 +114,47 @@ app.get('/listar-servicos', (req, res) => {
 
 // Gravar Agendamento Completo (Mestre e Detalhes encapsulados)
 app.post('/finalizar-agendamento', (req, res) => {
-    const { cliente_id, data, responsavel, total, tempo_total, servicos } = req.body;
+    const { cliente_id, nome_cliente, data, responsavel, total, tempo_total, servicos } = req.body;
 
-    // 1. Insere o registro na tabela Mestre (agendamentos)
-    const sqlMestre = `INSERT INTO agendamentos (cliente_id, data, responsavel, total, tempo_total) VALUES (?, ?, ?, ?, ?)`;
-    
-    db.run(sqlMestre, [cliente_id, data, responsavel, total, tempo_total], function(err) {
-        if (err) return res.status(500).json({ success: false, error: err.message });
+    function salvarAgendamento(idCliente) {
+        const sqlMestre = `INSERT INTO agendamentos (cliente_id, data, responsavel, total, tempo_total) VALUES (?, ?, ?, ?, ?)`;
 
-        // Recupera o ID gerado automaticamente para este agendamento
-        const agendamentoId = this.lastID;
+        db.run(sqlMestre, [idCliente, data, responsavel, total, tempo_total], function(err) {
+            if (err) return res.status(500).json({ success: false, error: err.message });
 
-        // 2. Prepara a inserção dos múltiplos serviços vinculados a este agendamento (Detalhe)
-        const sqlDetalhe = `INSERT INTO itens_agendamento (agendamento_id, servico_id, preco_cobrado) VALUES (?, ?, ?)`;
-        const stmt = db.prepare(sqlDetalhe);
+            const agendamentoId = this.lastID;
+            const sqlDetalhe = `INSERT INTO itens_agendamento (agendamento_id, servico_id, preco_cobrado) VALUES (?, ?, ?)`;
+            const stmt = db.prepare(sqlDetalhe);
 
-        // Percorre o array de serviços que veio do front-end e executa o statement
-        servicos.forEach(item => {
-            stmt.run(agendamentoId, item.id, item.preco);
+            (servicos || []).forEach(item => {
+                stmt.run(agendamentoId, item.id, item.preco);
+            });
+
+            stmt.finalize((errFinalize) => {
+                if (errFinalize) return res.status(500).json({ success: false, error: errFinalize.message });
+                res.json({ success: true });
+            });
         });
+    }
 
-        // Finaliza o statement para liberar o banco de dados
-        stmt.finalize((errFinalize) => {
-            if (errFinalize) return res.status(500).json({ success: false, error: errFinalize.message });
-            res.json({ success: true });
+    // Se veio o nome da cliente (campo texto), cadastra e depois agenda
+    if (nome_cliente && String(nome_cliente).trim()) {
+        const nome = String(nome_cliente).trim();
+        const sqlCliente = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;
+        db.run(sqlCliente, [nome, '-', '-'], function(err) {
+            if (err) return res.status(500).json({ success: false, error: err.message });
+            salvarAgendamento(this.lastID);
         });
-    });
+        return;
+    }
+
+    // Compatibilidade com cliente_id antigo
+    if (cliente_id) {
+        salvarAgendamento(cliente_id);
+        return;
+    }
+
+    return res.status(400).json({ success: false, error: 'Informe o nome da cliente.' });
 });
 
 // Listar todos os Agendamentos salvos (Mestre) com INNER JOIN para pegar o nome do cliente
