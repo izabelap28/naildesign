@@ -26,41 +26,16 @@ const servicosPadrao = [
 // Inicialização das Tabelas (Cria a estrutura caso não exista)
 db.serialize(() => {
     // 1. Tabela de Clientes
-    db.run(`CREATE TABLE IF NOT EXISTS clientes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        nome TEXT NOT NULL, 
-        cpf TEXT NOT NULL, 
-        telefone TEXT NOT NULL
-    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS clientes (\n        id INTEGER PRIMARY KEY AUTOINCREMENT, \n        nome TEXT NOT NULL, \n        cpf TEXT NOT NULL, \n        telefone TEXT NOT NULL\n    )`);
 
     // 2. Tabela de Serviços
-    db.run(`CREATE TABLE IF NOT EXISTS servicos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        descricao TEXT NOT NULL, 
-        preco REAL NOT NULL, 
-        tempo_estimado INTEGER NOT NULL
-    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS servicos (\n        id INTEGER PRIMARY KEY AUTOINCREMENT, \n        descricao TEXT NOT NULL, \n        preco REAL NOT NULL, \n        tempo_estimado INTEGER NOT NULL\n    )`);
 
     // 3. Tabela Mestre: Agendamentos
-    db.run(`CREATE TABLE IF NOT EXISTS agendamentos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        cliente_id INTEGER NOT NULL, 
-        data TEXT NOT NULL, 
-        responsavel TEXT NOT NULL,
-        total REAL NOT NULL,
-        tempo_total INTEGER NOT NULL,
-        FOREIGN KEY (cliente_id) REFERENCES clientes (id)
-    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS agendamentos (\n        id INTEGER PRIMARY KEY AUTOINCREMENT, \n        cliente_id INTEGER NOT NULL, \n        data TEXT NOT NULL, \n        responsavel TEXT NOT NULL,\n        total REAL NOT NULL,\n        tempo_total INTEGER NOT NULL,\n        FOREIGN KEY (cliente_id) REFERENCES clientes (id)\n    )`);
 
     // 4. Tabela Detalhe: Itens do Agendamento
-    db.run(`CREATE TABLE IF NOT EXISTS itens_agendamento (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        agendamento_id INTEGER NOT NULL, 
-        servico_id INTEGER NOT NULL, 
-        preco_cobrado REAL NOT NULL,
-        FOREIGN KEY (agendamento_id) REFERENCES agendamentos (id),
-        FOREIGN KEY (servico_id) REFERENCES servicos (id)
-    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS itens_agendamento (\n        id INTEGER PRIMARY KEY AUTOINCREMENT, \n        agendamento_id INTEGER NOT NULL, \n        servico_id INTEGER NOT NULL, \n        preco_cobrado REAL NOT NULL,\n        FOREIGN KEY (agendamento_id) REFERENCES agendamentos (id),\n        FOREIGN KEY (servico_id) REFERENCES servicos (id)\n    )`);
 
     // Seed inteligente: insere cada serviço se ainda não existir (pelo nome)
     servicosPadrao.forEach(s => {
@@ -70,159 +45,4 @@ db.serialize(() => {
                 return;
             }
             if (!row) {
-                db.run(
-                    'INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)',
-                    [s.descricao, s.preco, s.tempo_estimado],
-                    function (err2) {
-                        if (err2) {
-                            console.error('Erro ao inserir serviço:', err2.message);
-                        } else {
-                            console.log('✅ Serviço cadastrado:', s.descricao);
-                        }
-                    }
-                );
-            }
-        });
-    });
-});
-
-/* ==========================================================================
-   ROTAS DO MÓDULO: CLIENTES
-   ========================================================================== */
-
-// Salvar um novo cliente
-app.post('/salvar-cliente', (req, res) => {
-    const { nome, cpf, telefone } = req.body;
-    const sql = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;
-    
-    db.run(sql, [nome, cpf, telefone], (err) => {
-        if (err) return res.status(500).send("Erro ao salvar cliente: " + err.message);
-        res.redirect('/clientes.html');
-    });
-});
-
-// Listar todos os clientes (API JSON)
-app.get('/listar-clientes', (req, res) => {
-    const sql = `SELECT * FROM clientes ORDER BY nome ASC`;
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-/* ==========================================================================
-   ROTAS DO MÓDULO: SERVIÇOS
-   ========================================================================== */
-
-// Salvar um novo serviço no catálogo
-app.post('/salvar-servico', (req, res) => {
-    const { descricao, preco, tempo_estimado } = req.body;
-
-    if (!descricao || preco === undefined || preco === '' || tempo_estimado === undefined || tempo_estimado === '') {
-        return res.status(400).json({ success: false, error: 'Preencha todos os campos.' });
-    }
-
-    const sql = `INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)`;
-
-    db.run(sql, [descricao, parseFloat(preco), parseInt(tempo_estimado)], function(err) {
-        if (err) {
-            return res.status(500).json({ success: false, error: err.message });
-        }
-        res.json({ success: true, id: this.lastID });
-    });
-});
-
-// Listar todos os serviços (API JSON)
-app.get('/listar-servicos', (req, res) => {
-    const sql = `SELECT * FROM servicos ORDER BY descricao ASC`;
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-/* ==========================================================================
-   ROTAS DO MÓDULO: AGENDAMENTOS (TRANSAÇÃO MESTRE-DETALHE)
-   ========================================================================== */
-
-// Gravar Agendamento Completo (Mestre e Detalhes encapsulados)
-app.post('/finalizar-agendamento', (req, res) => {
-    const { cliente_id, nome_cliente, data, responsavel, total, tempo_total, servicos } = req.body;
-
-    function salvarAgendamento(idCliente) {
-        const sqlMestre = `INSERT INTO agendamentos (cliente_id, data, responsavel, total, tempo_total) VALUES (?, ?, ?, ?, ?)`;
-
-        db.run(sqlMestre, [idCliente, data, responsavel, total, tempo_total], function(err) {
-            if (err) return res.status(500).json({ success: false, error: err.message });
-
-            const agendamentoId = this.lastID;
-            const sqlDetalhe = `INSERT INTO itens_agendamento (agendamento_id, servico_id, preco_cobrado) VALUES (?, ?, ?)`;
-            const stmt = db.prepare(sqlDetalhe);
-
-            (servicos || []).forEach(item => {
-                stmt.run(agendamentoId, item.id, item.preco);
-            });
-
-            stmt.finalize((errFinalize) => {
-                if (errFinalize) return res.status(500).json({ success: false, error: errFinalize.message });
-                res.json({ success: true });
-            });
-        });
-    }
-
-    // Se veio o nome da cliente (campo texto), cadastra e depois agenda
-    if (nome_cliente && String(nome_cliente).trim()) {
-        const nome = String(nome_cliente).trim();
-        const sqlCliente = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;
-        db.run(sqlCliente, [nome, '-', '-'], function(err) {
-            if (err) return res.status(500).json({ success: false, error: err.message });
-            salvarAgendamento(this.lastID);
-        });
-        return;
-    }
-
-    // Compatibilidade com cliente_id antigo
-    if (cliente_id) {
-        salvarAgendamento(cliente_id);
-        return;
-    }
-
-    return res.status(400).json({ success: false, error: 'Informe o nome da cliente.' });
-});
-
-// Listar todos os Agendamentos salvos
-app.get('/listar-agendamentos', (req, res) => {
-    const sql = `
-        SELECT a.id, a.data, a.responsavel, a.total, a.tempo_total, c.nome as nome_cliente 
-        FROM agendamentos a 
-        INNER JOIN clientes c ON a.cliente_id = c.id 
-        ORDER BY a.id DESC`;
-        
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-// Listar serviços específicos de um agendamento
-app.get('/detalhes-agendamento/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = `
-        SELECT i.preco_cobrado, s.descricao, s.tempo_estimado 
-        FROM itens_agendamento i 
-        INNER JOIN servicos s ON i.servico_id = s.id 
-        WHERE i.agendamento_id = ?`;
-        
-    db.all(sql, [id], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-// Inicialização do Servidor na Porta 3000
-app.listen(3000, () => {
-    console.log('====================================================');
-    console.log('🚀 SisCristóvão Rodando com Sucesso na Porta 3000!');
-    console.log('📂 Banco de Dados: siscristovao.db');
-    console.log('====================================================');
-});
+                db.run(\n                    'INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)',\n                    [s.descricao, s.preco, s.tempo_estimado],\n                    function (err2) {\n                        if (err2) {\n                            console.error('Erro ao inserir serviço:', err2.message);\n                        } else {\n                            console.log('✅ Serviço cadastrado:', s.descricao);\n                        }\n                    }\n                );\n            }\n        });\n    });\n});\n\n/* ==========================================================================\n   ROTAS DO MÓDULO: CLIENTES\n   ========================================================================== */\n\n// Salvar um novo cliente\napp.post('/salvar-cliente', (req, res) => {\n    const { nome, cpf, telefone } = req.body;\n    const sql = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;\n    \n    db.run(sql, [nome, cpf, telefone], (err) => {\n        if (err) return res.status(500).send(\"Erro ao salvar cliente: \" + err.message);\n        res.redirect('/clientes.html');\n    });\n});\n\n// Listar todos os clientes (API JSON)\napp.get('/listar-clientes', (req, res) => {\n    const sql = `SELECT * FROM clientes ORDER BY nome ASC`;\n    db.all(sql, [], (err, rows) => {\n        if (err) return res.status(500).json({ error: err.message });\n        res.json(rows);\n    });\n});\n\n/* ==========================================================================\n   ROTAS DO MÓDULO: SERVIÇOS\n   ========================================================================== */\n\n// Salvar um novo serviço no catálogo\napp.post('/salvar-servico', (req, res) => {\n    const { descricao, preco, tempo_estimado } = req.body;\n\n    if (!descricao || preco === undefined || preco === '' || tempo_estimado === undefined || tempo_estimado === '') {\n        return res.status(400).json({ success: false, error: 'Preencha todos os campos.' });\n    }\n\n    const sql = `INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)`;\n\n    db.run(sql, [descricao, parseFloat(preco), parseInt(tempo_estimado)], function(err) {\n        if (err) {\n            return res.status(500).json({ success: false, error: err.message });\n        }\n        res.json({ success: true, id: this.lastID });\n    });\n});\n\n// Listar todos os serviços (API JSON)\napp.get('/listar-servicos', (req, res) => {\n    const sql = `SELECT * FROM servicos ORDER BY descricao ASC`;\n    db.all(sql, [], (err, rows) => {\n        if (err) return res.status(500).json({ error: err.message });\n        res.json(rows);\n    });\n});\n\n/* ==========================================================================\n   ROTAS DO MÓDULO: AGENDAMENTOS (TRANSAÇÃO MESTRE-DETALHE)\n   ========================================================================== */\n\n// Gravar Agendamento Completo (Mestre e Detalhes encapsulados)\napp.post('/finalizar-agendamento', (req, res) => {\n    const { cliente_id, nome_cliente, data, responsavel, total, tempo_total, servicos } = req.body;\n\n    if (!data || !responsavel) {\n        return res.status(400).json({ success: false, error: 'Data e responsável são obrigatórios.' });\n    }\n    if (!Array.isArray(servicos) || servicos.length === 0) {\n        return res.status(400).json({ success: false, error: 'Adicione pelo menos um serviço.' });\n    }\n\n    function inserirItens(agendamentoId, lista, index, callback) {\n        if (index >= lista.length) {\n            return callback(null);\n        }\n        const item = lista[index];\n        const servicoId = parseInt(item.id, 10);\n        const preco = parseFloat(item.preco);\n\n        if (!servicoId || isNaN(preco)) {\n            return callback(new Error('Serviço inválido no agendamento.'));\n        }\n\n        db.run(\n            `INSERT INTO itens_agendamento (agendamento_id, servico_id, preco_cobrado) VALUES (?, ?, ?)`,\n            [agendamentoId, servicoId, preco],\n            function (err) {\n                if (err) return callback(err);\n                inserirItens(agendamentoId, lista, index + 1, callback);\n            }\n        );\n    }\n\n    function salvarAgendamento(idCliente) {\n        const sqlMestre = `INSERT INTO agendamentos (cliente_id, data, responsavel, total, tempo_total) VALUES (?, ?, ?, ?, ?)`;\n\n        db.run(sqlMestre, [idCliente, data, responsavel, parseFloat(total) || 0, parseInt(tempo_total, 10) || 0], function (err) {\n            if (err) {\n                return res.status(500).json({ success: false, error: err.message });\n            }\n\n            const agendamentoId = this.lastID;\n\n            inserirItens(agendamentoId, servicos, 0, (errItens) => {\n                if (errItens) {\n                    return res.status(500).json({ success: false, error: errItens.message });\n                }\n                res.json({ success: true, id: agendamentoId });\n            });\n        });\n    }\n\n    // Se veio o nome da cliente (campo texto), cadastra e depois agenda\n    if (nome_cliente && String(nome_cliente).trim()) {\n        const nome = String(nome_cliente).trim();\n        const sqlCliente = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;\n        db.run(sqlCliente, [nome, '-', '-'], function (err) {\n            if (err) {\n                return res.status(500).json({ success: false, error: err.message });\n            }\n            salvarAgendamento(this.lastID);\n        });\n        return;\n    }\n\n    // Compatibilidade com cliente_id antigo\n    if (cliente_id) {\n        salvarAgendamento(cliente_id);\n        return;\n    }\n\n    return res.status(400).json({ success: false, error: 'Informe o nome da cliente.' });\n});\n\n// Listar todos os Agendamentos salvos\napp.get('/listar-agendamentos', (req, res) => {\n    const sql = `\n        SELECT a.id, a.data, a.responsavel, a.total, a.tempo_total, c.nome as nome_cliente \n        FROM agendamentos a \n        INNER JOIN clientes c ON a.cliente_id = c.id \n        ORDER BY a.id DESC`;\n        \n    db.all(sql, [], (err, rows) => {\n        if (err) return res.status(500).json({ error: err.message });\n        res.json(rows);\n    });\n});\n\n// Listar serviços específicos de um agendamento\napp.get('/detalhes-agendamento/:id', (req, res) => {\n    const { id } = req.params;\n    const sql = `\n        SELECT i.preco_cobrado, s.descricao, s.tempo_estimado \n        FROM itens_agendamento i \n        INNER JOIN servicos s ON i.servico_id = s.id \n        WHERE i.agendamento_id = ?`;\n        \n    db.all(sql, [id], (err, rows) => {\n        if (err) return res.status(500).json({ error: err.message });\n        res.json(rows);\n    });\n});\n\n// Inicialização do Servidor na Porta 3000\napp.listen(3000, () => {\n    console.log('====================================================');\n    console.log('🚀 SisCristóvão Rodando com Sucesso na Porta 3000!');\n    console.log('📂 Banco de Dados: siscristovao.db');\n    console.log('====================================================');\n});\n
