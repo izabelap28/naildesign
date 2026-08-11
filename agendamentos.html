@@ -121,6 +121,18 @@
     </footer>
 
     <script>
+        // Serviços padrão (fallback caso o servidor não esteja rodando ou o banco esteja vazio)
+        const SERVICOS_PADRAO = [
+            { id: null, descricao: 'Alongamento em Gel', preco: 170, tempo_estimado: 150 },
+            { id: null, descricao: 'Esmaltação em Gel', preco: 70, tempo_estimado: 90 },
+            { id: null, descricao: 'Blindagem com Esmaltação em Gel', preco: 90, tempo_estimado: 90 },
+            { id: null, descricao: 'Esmaltação Normal Pé e Mão', preco: 50, tempo_estimado: 60 },
+            { id: null, descricao: 'Esmaltação Normal Mão', preco: 30, tempo_estimado: 30 },
+            { id: null, descricao: 'Esmaltação Normal Pé', preco: 30, tempo_estimado: 30 },
+            { id: null, descricao: 'Cabelo Corte com Escova', preco: 50, tempo_estimado: 30 },
+            { id: null, descricao: 'Hidratação', preco: 60, tempo_estimado: 60 }
+        ];
+
         let listaServicosDb = []; // serviços vindos do banco
         let carrinhoServicos = [];
         let totalGeral = 0;
@@ -130,34 +142,51 @@
             carregarServicosNoSelect();
         };
 
+        function preencherSelect(servicos) {
+            const sel = document.getElementById('selServico');
+            sel.innerHTML = '<option value="">Selecione um serviço...</option>';
+
+            if (!servicos || servicos.length === 0) {
+                sel.innerHTML = '<option value="">Nenhum serviço disponível</option>';
+                return;
+            }
+
+            servicos.forEach((s, index) => {
+                const option = document.createElement('option');
+                // Usa o id do banco se existir, senão um índice temporário
+                option.value = s.id != null ? s.id : ('temp-' + index);
+                option.textContent = s.descricao;
+                option.setAttribute('data-preco', s.preco);
+                option.setAttribute('data-tempo', s.tempo_estimado);
+                option.setAttribute('data-id', s.id != null ? s.id : '');
+                option.setAttribute('data-descricao', s.descricao);
+                sel.appendChild(option);
+            });
+        }
+
         function carregarServicosNoSelect() {
             const sel = document.getElementById('selServico');
             sel.innerHTML = '<option value="">Carregando serviços...</option>';
 
             fetch('/listar-servicos')
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error('Servidor respondeu com erro');
+                    return res.json();
+                })
                 .then(servicos => {
                     listaServicosDb = servicos || [];
-                    sel.innerHTML = '<option value="">Selecione um serviço...</option>';
-
-                    if (listaServicosDb.length === 0) {
-                        sel.innerHTML = '<option value="">Nenhum serviço cadastrado</option>';
-                        return;
+                    if (listaServicosDb.length > 0) {
+                        preencherSelect(listaServicosDb);
+                    } else {
+                        // Banco vazio → usa os serviços padrão
+                        console.warn('Nenhum serviço no banco. Usando lista padrão.');
+                        preencherSelect(SERVICOS_PADRAO);
                     }
-
-                    listaServicosDb.forEach(s => {
-                        const option = document.createElement('option');
-                        option.value = s.id; // usa o ID real do banco
-                        option.textContent = s.descricao;
-                        option.setAttribute('data-preco', s.preco);
-                        option.setAttribute('data-tempo', s.tempo_estimado);
-                        option.setAttribute('data-id', s.id);
-                        sel.appendChild(option);
-                    });
                 })
                 .catch(err => {
-                    console.warn('Não foi possível carregar serviços do banco:', err);
-                    sel.innerHTML = '<option value="">Erro ao carregar. Rode o servidor (node server.js)</option>';
+                    console.warn('Não foi possível carregar do servidor. Usando lista padrão:', err);
+                    // Fallback: mostra os serviços padrão mesmo sem servidor
+                    preencherSelect(SERVICOS_PADRAO);
                 });
         }
 
@@ -180,19 +209,20 @@
             }
 
             const option = sel.options[sel.selectedIndex];
-            const descricao = option.textContent;
-            const preco = Number(option.getAttribute('data-preco'));
-            const tempo = Number(option.getAttribute('data-tempo'));
-            const id = Number(option.getAttribute('data-id') || idSelecionado);
+            const descricao = option.getAttribute('data-descricao') || option.textContent;
+            const preco = Number(option.getAttribute('data-preco')) || 0;
+            const tempo = Number(option.getAttribute('data-tempo')) || 0;
+            const dataId = option.getAttribute('data-id');
+            const id = dataId ? Number(dataId) : null;
 
-            // Evita adicionar o mesmo serviço duas vezes
-            if (carrinhoServicos.some(s => s.id === id)) {
+            // Evita adicionar o mesmo serviço duas vezes (pelo nome)
+            if (carrinhoServicos.some(s => s.descricao === descricao)) {
                 alert('Este serviço já foi adicionado.');
                 return;
             }
 
             carrinhoServicos.push({
-                id: id,
+                id: id,               // pode ser null se veio do fallback
                 descricao: descricao,
                 preco: preco,
                 tempo: tempo
@@ -270,7 +300,7 @@
             // Se algum serviço não tem id do banco, avisa
             const semId = carrinhoServicos.filter(s => !s.id);
             if (semId.length > 0) {
-                alert('Alguns serviços ainda não estão no banco.\nReinicie o servidor (node server.js) para cadastrar os serviços padrão e tente novamente.');
+                alert('Os serviços ainda não estão cadastrados no banco de dados.\n\nFaça o seguinte:\n1. Pare o servidor (Ctrl+C)\n2. Rode novamente: node server.js\n3. Recarregue esta página e tente de novo.\n\nIsso cadastra os serviços padrão automaticamente.');
                 return;
             }
 
