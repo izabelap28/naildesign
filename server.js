@@ -1,17 +1,17 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
+
 const app = express();
+const DB_FILE = path.join(__dirname, 'banco.json');
 
-// Configurações do Servidor
+// Configurações
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json()); // Necessário para processar o JSON estruturado dos agendamentos
-app.use(express.static('.')); // Serve as páginas HTML, CSS e imagens do projeto
+app.use(express.json());
+app.use(express.static('.'));
 
-// Conexão com o Novo Banco de Dados do Projeto
-const db = new sqlite3.Database('./siscristovao.db');
-
-// Serviços padrão (aparecem no select e preenchem valor + tempo)
+// Serviços padrão
 const servicosPadrao = [
     { descricao: 'Alongamento em Gel', preco: 170, tempo_estimado: 150 },
     { descricao: 'Esmaltação em Gel', preco: 70, tempo_estimado: 90 },
@@ -23,98 +23,71 @@ const servicosPadrao = [
     { descricao: 'Hidratação', preco: 60, tempo_estimado: 60 }
 ];
 
-// Inicialização das Tabelas (Cria a estrutura caso não exista)
-db.serialize(() => {
-    // 1. Tabela de Clientes
-    db.run(`CREATE TABLE IF NOT EXISTS clientes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        nome TEXT NOT NULL, 
-        cpf TEXT NOT NULL, 
-        telefone TEXT NOT NULL
-    )`);
+// ---------- Banco de dados em JSON ----------
+function lerBanco() {
+    try {
+        if (fs.existsSync(DB_FILE)) {
+            return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Erro ao ler banco:', e.message);
+    }
+    return { clientes: [], servicos: [], agendamentos: [], itens_agendamento: [], nextId: { clientes: 1, servicos: 1, agendamentos: 1, itens: 1 } };
+}
 
-    // 2. Tabela de Serviços
-    db.run(`CREATE TABLE IF NOT EXISTS servicos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        descricao TEXT NOT NULL, 
-        preco REAL NOT NULL, 
-        tempo_estimado INTEGER NOT NULL
-    )`);
+function salvarBanco(data) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+}
 
-    // 3. Tabela Mestre: Agendamentos
-    db.run(`CREATE TABLE IF NOT EXISTS agendamentos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        cliente_id INTEGER NOT NULL, 
-        data TEXT NOT NULL, 
-        responsavel TEXT NOT NULL,
-        total REAL NOT NULL,
-        tempo_total INTEGER NOT NULL,
-        FOREIGN KEY (cliente_id) REFERENCES clientes (id)
-    )`);
+// Inicializa o banco e cadastra serviços padrão
+function inicializarBanco() {
+    const db = lerBanco();
 
-    // 4. Tabela Detalhe: Itens do Agendamento
-    db.run(`CREATE TABLE IF NOT EXISTS itens_agendamento (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        agendamento_id INTEGER NOT NULL, 
-        servico_id INTEGER NOT NULL, 
-        preco_cobrado REAL NOT NULL,
-        FOREIGN KEY (agendamento_id) REFERENCES agendamentos (id),
-        FOREIGN KEY (servico_id) REFERENCES servicos (id)
-    )`);
-
-    // Seed inteligente: insere cada serviço se ainda não existir (pelo nome)
     servicosPadrao.forEach(s => {
-        db.get('SELECT id FROM servicos WHERE descricao = ?', [s.descricao], (err, row) => {
-            if (err) {
-                console.error('Erro ao verificar serviço:', err.message);
-                return;
-            }
-            if (!row) {
-                db.run(
-                    'INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)',
-                    [s.descricao, s.preco, s.tempo_estimado],
-                    function (err2) {
-                        if (err2) {
-                            console.error('Erro ao inserir serviço:', err2.message);
-                        } else {
-                            console.log('✅ Serviço cadastrado:', s.descricao);
-                        }
-                    }
-                );
-            }
-        });
+        const existe = db.servicos.find(x => x.descricao === s.descricao);
+        if (!existe) {
+            db.servicos.push({
+                id: db.nextId.servicos++,
+                descricao: s.descricao,
+                preco: s.preco,
+                tempo_estimado: s.tempo_estimado
+            });
+            console.log('✅ Serviço cadastrado:', s.descricao);
+        }
     });
-});
+
+    salvarBanco(db);
+    return db;
+}
+
+inicializarBanco();
 
 /* ==========================================================================
-   ROTAS DO MÓDULO: CLIENTES
+   ROTAS: CLIENTES
    ========================================================================== */
 
-// Salvar um novo cliente
 app.post('/salvar-cliente', (req, res) => {
     const { nome, cpf, telefone } = req.body;
-    const sql = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;
-    
-    db.run(sql, [nome, cpf, telefone], (err) => {
-        if (err) return res.status(500).send("Erro ao salvar cliente: " + err.message);
-        res.redirect('/clientes.html');
+    const db = lerBanco();
+    db.clientes.push({
+        id: db.nextId.clientes++,
+        nome: nome || '',
+        cpf: cpf || '-',
+        telefone: telefone || '-'
     });
+    salvarBanco(db);
+    res.redirect('/clientes.html');
 });
 
-// Listar todos os clientes (API JSON)
 app.get('/listar-clientes', (req, res) => {
-    const sql = `SELECT * FROM clientes ORDER BY nome ASC`;
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
+    const db = lerBanco();
+    res.json(db.clientes.sort((a, b) => a.nome.localeCompare(b.nome)));
 });
 
 /* ==========================================================================
-   ROTAS DO MÓDULO: SERVIÇOS
+   ROTAS: SERVIÇOS
    ========================================================================== */
 
-// Salvar um novo serviço no catálogo
 app.post('/salvar-servico', (req, res) => {
     const { descricao, preco, tempo_estimado } = req.body;
 
@@ -122,30 +95,27 @@ app.post('/salvar-servico', (req, res) => {
         return res.status(400).json({ success: false, error: 'Preencha todos os campos.' });
     }
 
-    const sql = `INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)`;
-
-    db.run(sql, [descricao, parseFloat(preco), parseInt(tempo_estimado)], function(err) {
-        if (err) {
-            return res.status(500).json({ success: false, error: err.message });
-        }
-        res.json({ success: true, id: this.lastID });
-    });
+    const db = lerBanco();
+    const novo = {
+        id: db.nextId.servicos++,
+        descricao: descricao.trim(),
+        preco: parseFloat(preco),
+        tempo_estimado: parseInt(tempo_estimado, 10)
+    };
+    db.servicos.push(novo);
+    salvarBanco(db);
+    res.json({ success: true, id: novo.id });
 });
 
-// Listar todos os serviços (API JSON)
 app.get('/listar-servicos', (req, res) => {
-    const sql = `SELECT * FROM servicos ORDER BY descricao ASC`;
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
+    const db = lerBanco();
+    res.json(db.servicos.sort((a, b) => a.descricao.localeCompare(b.descricao)));
 });
 
 /* ==========================================================================
-   ROTAS DO MÓDULO: AGENDAMENTOS (TRANSAÇÃO MESTRE-DETALHE)
+   ROTAS: AGENDAMENTOS
    ========================================================================== */
 
-// Gravar Agendamento Completo (Mestre e Detalhes encapsulados)
 app.post('/finalizar-agendamento', (req, res) => {
     const { cliente_id, nome_cliente, data, responsavel, total, tempo_total, servicos } = req.body;
 
@@ -156,102 +126,89 @@ app.post('/finalizar-agendamento', (req, res) => {
         return res.status(400).json({ success: false, error: 'Adicione pelo menos um serviço.' });
     }
 
-    function inserirItens(agendamentoId, lista, index, callback) {
-        if (index >= lista.length) {
-            return callback(null);
-        }
-        const item = lista[index];
-        const servicoId = parseInt(item.id, 10);
-        const preco = parseFloat(item.preco);
+    const db = lerBanco();
 
-        if (!servicoId || isNaN(preco)) {
-            return callback(new Error('Serviço inválido no agendamento.'));
-        }
-
-        db.run(
-            `INSERT INTO itens_agendamento (agendamento_id, servico_id, preco_cobrado) VALUES (?, ?, ?)`,
-            [agendamentoId, servicoId, preco],
-            function (err) {
-                if (err) return callback(err);
-                inserirItens(agendamentoId, lista, index + 1, callback);
-            }
-        );
-    }
-
-    function salvarAgendamento(idCliente) {
-        const sqlMestre = `INSERT INTO agendamentos (cliente_id, data, responsavel, total, tempo_total) VALUES (?, ?, ?, ?, ?)`;
-
-        db.run(sqlMestre, [idCliente, data, responsavel, parseFloat(total) || 0, parseInt(tempo_total, 10) || 0], function (err) {
-            if (err) {
-                return res.status(500).json({ success: false, error: err.message });
-            }
-
-            const agendamentoId = this.lastID;
-
-            inserirItens(agendamentoId, servicos, 0, (errItens) => {
-                if (errItens) {
-                    return res.status(500).json({ success: false, error: errItens.message });
-                }
-                res.json({ success: true, id: agendamentoId });
-            });
-        });
-    }
-
-    // Se veio o nome da cliente (campo texto), cadastra e depois agenda
+    // Cria ou usa o cliente
+    let idCliente = cliente_id;
     if (nome_cliente && String(nome_cliente).trim()) {
         const nome = String(nome_cliente).trim();
-        const sqlCliente = `INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)`;
-        db.run(sqlCliente, [nome, '-', '-'], function (err) {
-            if (err) {
-                return res.status(500).json({ success: false, error: err.message });
-            }
-            salvarAgendamento(this.lastID);
+        idCliente = db.nextId.clientes++;
+        db.clientes.push({
+            id: idCliente,
+            nome: nome,
+            cpf: '-',
+            telefone: '-'
         });
-        return;
     }
 
-    // Compatibilidade com cliente_id antigo
-    if (cliente_id) {
-        salvarAgendamento(cliente_id);
-        return;
+    if (!idCliente) {
+        return res.status(400).json({ success: false, error: 'Informe o nome da cliente.' });
     }
 
-    return res.status(400).json({ success: false, error: 'Informe o nome da cliente.' });
+    // Cria o agendamento
+    const agendamentoId = db.nextId.agendamentos++;
+    db.agendamentos.push({
+        id: agendamentoId,
+        cliente_id: idCliente,
+        data: data,
+        responsavel: responsavel,
+        total: parseFloat(total) || 0,
+        tempo_total: parseInt(tempo_total, 10) || 0
+    });
+
+    // Cria os itens
+    servicos.forEach(item => {
+        db.itens_agendamento.push({
+            id: db.nextId.itens++,
+            agendamento_id: agendamentoId,
+            servico_id: parseInt(item.id, 10),
+            preco_cobrado: parseFloat(item.preco)
+        });
+    });
+
+    salvarBanco(db);
+    res.json({ success: true, id: agendamentoId });
 });
 
-// Listar todos os Agendamentos salvos
 app.get('/listar-agendamentos', (req, res) => {
-    const sql = `
-        SELECT a.id, a.data, a.responsavel, a.total, a.tempo_total, c.nome as nome_cliente 
-        FROM agendamentos a 
-        INNER JOIN clientes c ON a.cliente_id = c.id 
-        ORDER BY a.id DESC`;
-        
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
+    const db = lerBanco();
+    const lista = db.agendamentos.map(a => {
+        const cliente = db.clientes.find(c => c.id === a.cliente_id);
+        return {
+            id: a.id,
+            data: a.data,
+            responsavel: a.responsavel,
+            total: a.total,
+            tempo_total: a.tempo_total,
+            nome_cliente: cliente ? cliente.nome : 'Cliente'
+        };
     });
+    // Mais recentes primeiro
+    lista.sort((a, b) => b.id - a.id);
+    res.json(lista);
 });
 
-// Listar serviços específicos de um agendamento
 app.get('/detalhes-agendamento/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = `
-        SELECT i.preco_cobrado, s.descricao, s.tempo_estimado 
-        FROM itens_agendamento i 
-        INNER JOIN servicos s ON i.servico_id = s.id 
-        WHERE i.agendamento_id = ?`;
-        
-    db.all(sql, [id], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
+    const db = lerBanco();
+    const id = parseInt(req.params.id, 10);
+    const itens = db.itens_agendamento
+        .filter(i => i.agendamento_id === id)
+        .map(i => {
+            const servico = db.servicos.find(s => s.id === i.servico_id);
+            return {
+                preco_cobrado: i.preco_cobrado,
+                descricao: servico ? servico.descricao : 'Serviço',
+                tempo_estimado: servico ? servico.tempo_estimado : 0
+            };
+        });
+    res.json(itens);
 });
 
-// Inicialização do Servidor na Porta 3000
+// Inicialização do Servidor
 app.listen(3000, () => {
     console.log('====================================================');
-    console.log('🚀 SisCristóvão Rodando com Sucesso na Porta 3000!');
-    console.log('📂 Banco de Dados: siscristovao.db');
+    console.log('🚀 Salão Belíssima rodando na porta 3000!');
+    console.log('📂 Banco de dados: banco.json');
+    console.log('🌐 Acesse: http://localhost:3000');
     console.log('====================================================');
 });
