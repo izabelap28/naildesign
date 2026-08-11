@@ -297,42 +297,80 @@
                 return;
             }
 
-            // Se algum serviço não tem id do banco, avisa
+            // Função que realmente envia o agendamento
+            function enviarAgendamento(servicosComId) {
+                const payload = {
+                    nome_cliente: nomeCliente,
+                    data: data,
+                    responsavel: responsavel,
+                    total: totalGeral,
+                    tempo_total: tempoTotalGeral,
+                    servicos: servicosComId.map(s => ({ id: s.id, preco: s.preco }))
+                };
+
+                fetch('/finalizar-agendamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(async (res) => {
+                    const result = await res.json().catch(() => ({}));
+                    if (!res.ok || !result.success) {
+                        throw new Error(result.error || ('Erro HTTP ' + res.status));
+                    }
+                    return result;
+                })
+                .then(result => {
+                    alert('Agendamento confirmado com sucesso!');
+                    window.location.href = 'consulta_agendamentos.html';
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Erro ao salvar: ' + (err.message || 'Verifique se o servidor está rodando (node server.js).'));
+                });
+            }
+
+            // Se todos já têm ID, envia direto
             const semId = carrinhoServicos.filter(s => !s.id);
-            if (semId.length > 0) {
-                alert('Os serviços ainda não estão cadastrados no banco de dados.\n\nFaça o seguinte:\n1. Pare o servidor (Ctrl+C)\n2. Rode novamente: node server.js\n3. Recarregue esta página e tente de novo.\n\nIsso cadastra os serviços padrão automaticamente.');
+            if (semId.length === 0) {
+                enviarAgendamento(carrinhoServicos);
                 return;
             }
 
-            const payload = {
-                nome_cliente: nomeCliente,
-                data: data,
-                responsavel: responsavel,
-                total: totalGeral,
-                tempo_total: tempoTotalGeral,
-                servicos: carrinhoServicos.map(s => ({ id: s.id, preco: s.preco }))
-            };
+            // Alguns serviços não têm ID → tenta buscar no servidor e associar pelo nome
+            fetch('/listar-servicos')
+                .then(res => {
+                    if (!res.ok) throw new Error('Servidor não respondeu');
+                    return res.json();
+                })
+                .then(servicosDoBanco => {
+                    if (!servicosDoBanco || servicosDoBanco.length === 0) {
+                        throw new Error('Nenhum serviço encontrado no banco. Reinicie o servidor (node server.js) e tente novamente.');
+                    }
 
-            fetch('/finalizar-agendamento', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(async (res) => {
-                const result = await res.json().catch(() => ({}));
-                if (!res.ok || !result.success) {
-                    throw new Error(result.error || ('Erro HTTP ' + res.status));
-                }
-                return result;
-            })
-            .then(result => {
-                alert('Agendamento confirmado com sucesso!');
-                window.location.href = 'consulta_agendamentos.html';
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Erro ao salvar: ' + (err.message || 'Verifique se o servidor está rodando (node server.js).'));
-            });
+                    // Atualiza os IDs no carrinho pelo nome do serviço
+                    const servicosResolvidos = carrinhoServicos.map(item => {
+                        if (item.id) return item;
+                        const encontrado = servicosDoBanco.find(s => s.descricao === item.descricao);
+                        if (encontrado) {
+                            return { ...item, id: encontrado.id };
+                        }
+                        return item;
+                    });
+
+                    const aindaSemId = servicosResolvidos.filter(s => !s.id);
+                    if (aindaSemId.length > 0) {
+                        throw new Error('Alguns serviços não foram encontrados no banco. Reinicie o servidor (node server.js) e recarregue a página.');
+                    }
+
+                    // Atualiza o carrinho com os IDs corretos
+                    carrinhoServicos = servicosResolvidos;
+                    enviarAgendamento(servicosResolvidos);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert(err.message || 'Não foi possível conectar ao servidor.\n\nRode: node server.js\nDepois recarregue a página (Ctrl+F5) e tente novamente.');
+                });
         }
     </script>
 
