@@ -11,6 +11,18 @@ app.use(express.static('.')); // Serve as páginas HTML, CSS e imagens do projet
 // Conexão com o Novo Banco de Dados do Projeto
 const db = new sqlite3.Database('./siscristovao.db');
 
+// Serviços padrão (aparecem no select e preenchem valor + tempo)
+const servicosPadrao = [
+    { descricao: 'Alongamento em Gel', preco: 170, tempo_estimado: 150 },
+    { descricao: 'Esmaltação em Gel', preco: 70, tempo_estimado: 90 },
+    { descricao: 'Blindagem com Esmaltação em Gel', preco: 90, tempo_estimado: 90 },
+    { descricao: 'Esmaltação Normal Pé e Mão', preco: 50, tempo_estimado: 60 },
+    { descricao: 'Esmaltação Normal Mão', preco: 30, tempo_estimado: 30 },
+    { descricao: 'Esmaltação Normal Pé', preco: 30, tempo_estimado: 30 },
+    { descricao: 'Cabelo Corte com Escova', preco: 50, tempo_estimado: 30 },
+    { descricao: 'Hidratação', preco: 60, tempo_estimado: 60 }
+];
+
 // Inicialização das Tabelas (Cria a estrutura caso não exista)
 db.serialize(() => {
     // 1. Tabela de Clientes (Solicitantes dos Serviços)
@@ -49,6 +61,23 @@ db.serialize(() => {
         FOREIGN KEY (agendamento_id) REFERENCES agendamentos (id),
         FOREIGN KEY (servico_id) REFERENCES servicos (id)
     )`);
+
+    // Seed: insere os serviços padrão se a tabela estiver vazia
+    db.get('SELECT COUNT(*) as total FROM servicos', (err, row) => {
+        if (err) {
+            console.error('Erro ao verificar serviços:', err.message);
+            return;
+        }
+        if (row && row.total === 0) {
+            const stmt = db.prepare('INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)');
+            servicosPadrao.forEach(s => {
+                stmt.run(s.descricao, s.preco, s.tempo_estimado);
+            });
+            stmt.finalize(() => {
+                console.log('✅ Serviços padrão cadastrados no banco.');
+            });
+        }
+    });
 });
 
 /* ==========================================================================
