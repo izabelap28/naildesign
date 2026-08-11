@@ -288,18 +288,20 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(res => res.json())
-            .then(result => {
-                if (result.success) {
-                    alert('Agendamento confirmado com sucesso!');
-                    window.location.href = 'consulta_agendamentos.html';
-                } else {
-                    alert('Erro ao salvar: ' + (result.error || 'tente novamente'));
+            .then(async (res) => {
+                const result = await res.json().catch(() => ({}));
+                if (!res.ok || !result.success) {
+                    throw new Error(result.error || ('Erro HTTP ' + res.status));
                 }
+                return result;
+            })
+            .then(result => {
+                alert('Agendamento confirmado com sucesso!');
+                window.location.href = 'consulta_agendamentos.html';
             })
             .catch(err => {
                 console.error(err);
-                alert('Erro de conexão. Verifique se o servidor está rodando.');
+                alert('Erro ao salvar: ' + (err.message || 'Verifique se o servidor está rodando (node server.js).'));
             });
         }
     </script>
