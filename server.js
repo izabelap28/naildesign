@@ -25,7 +25,7 @@ const servicosPadrao = [
 
 // Inicialização das Tabelas (Cria a estrutura caso não exista)
 db.serialize(() => {
-    // 1. Tabela de Clientes (Solicitantes dos Serviços)
+    // 1. Tabela de Clientes
     db.run(`CREATE TABLE IF NOT EXISTS clientes (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         nome TEXT NOT NULL, 
@@ -33,7 +33,7 @@ db.serialize(() => {
         telefone TEXT NOT NULL
     )`);
 
-    // 2. Tabela de Serviços (Catálogo de Assistência do Laboratório)
+    // 2. Tabela de Serviços
     db.run(`CREATE TABLE IF NOT EXISTS servicos (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         descricao TEXT NOT NULL, 
@@ -41,7 +41,7 @@ db.serialize(() => {
         tempo_estimado INTEGER NOT NULL
     )`);
 
-    // 3. Tabela Mestre: Agendamentos (Guarda a Ordem de Serviço geral)
+    // 3. Tabela Mestre: Agendamentos
     db.run(`CREATE TABLE IF NOT EXISTS agendamentos (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         cliente_id INTEGER NOT NULL, 
@@ -52,7 +52,7 @@ db.serialize(() => {
         FOREIGN KEY (cliente_id) REFERENCES clientes (id)
     )`);
 
-    // 4. Tabela Detalhe: Itens do Agendamento (Relaciona os serviços aplicados a cada O.S.)
+    // 4. Tabela Detalhe: Itens do Agendamento
     db.run(`CREATE TABLE IF NOT EXISTS itens_agendamento (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         agendamento_id INTEGER NOT NULL, 
@@ -62,21 +62,27 @@ db.serialize(() => {
         FOREIGN KEY (servico_id) REFERENCES servicos (id)
     )`);
 
-    // Seed: insere os serviços padrão se a tabela estiver vazia
-    db.get('SELECT COUNT(*) as total FROM servicos', (err, row) => {
-        if (err) {
-            console.error('Erro ao verificar serviços:', err.message);
-            return;
-        }
-        if (row && row.total === 0) {
-            const stmt = db.prepare('INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)');
-            servicosPadrao.forEach(s => {
-                stmt.run(s.descricao, s.preco, s.tempo_estimado);
-            });
-            stmt.finalize(() => {
-                console.log('✅ Serviços padrão cadastrados no banco.');
-            });
-        }
+    // Seed inteligente: insere cada serviço se ainda não existir (pelo nome)
+    servicosPadrao.forEach(s => {
+        db.get('SELECT id FROM servicos WHERE descricao = ?', [s.descricao], (err, row) => {
+            if (err) {
+                console.error('Erro ao verificar serviço:', err.message);
+                return;
+            }
+            if (!row) {
+                db.run(
+                    'INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)',
+                    [s.descricao, s.preco, s.tempo_estimado],
+                    function (err2) {
+                        if (err2) {
+                            console.error('Erro ao inserir serviço:', err2.message);
+                        } else {
+                            console.log('✅ Serviço cadastrado:', s.descricao);
+                        }
+                    }
+                );
+            }
+        });
     });
 });
 
@@ -91,7 +97,6 @@ app.post('/salvar-cliente', (req, res) => {
     
     db.run(sql, [nome, cpf, telefone], (err) => {
         if (err) return res.status(500).send("Erro ao salvar cliente: " + err.message);
-        // Redireciona de volta para a página de listagem/cadastro
         res.redirect('/clientes.html');
     });
 });
@@ -123,7 +128,6 @@ app.post('/salvar-servico', (req, res) => {
         if (err) {
             return res.status(500).json({ success: false, error: err.message });
         }
-        // Responde JSON (usado pelo formulário via fetch)
         res.json({ success: true, id: this.lastID });
     });
 });
@@ -186,7 +190,7 @@ app.post('/finalizar-agendamento', (req, res) => {
     return res.status(400).json({ success: false, error: 'Informe o nome da cliente.' });
 });
 
-// Listar todos os Agendamentos salvos (Mestre) com INNER JOIN para pegar o nome do cliente
+// Listar todos os Agendamentos salvos
 app.get('/listar-agendamentos', (req, res) => {
     const sql = `
         SELECT a.id, a.data, a.responsavel, a.total, a.tempo_total, c.nome as nome_cliente 
@@ -200,7 +204,7 @@ app.get('/listar-agendamentos', (req, res) => {
     });
 });
 
-// Listar serviços específicos de um agendamento (Detalhe)
+// Listar serviços específicos de um agendamento
 app.get('/detalhes-agendamento/:id', (req, res) => {
     const { id } = req.params;
     const sql = `

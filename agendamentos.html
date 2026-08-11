@@ -67,6 +67,14 @@
             <label for="selServico">Serviço</label>
             <select id="selServico" onchange="atualizarDadosServico()">
                 <option value="">Selecione um serviço...</option>
+                <option value="alongamento-em-gel" data-preco="170" data-tempo="150">Alongamento em Gel</option>
+                <option value="esmaltação-em-gel" data-preco="70" data-tempo="90">Esmaltação em Gel</option>
+                <option value="blindagem-esmaltação-gel" data-preco="90" data-tempo="90">Blindagem com Esmaltação em Gel</option>
+                <option value="esmaltação-normal-pe-mao" data-preco="50" data-tempo="60">Esmaltação Normal Pé e Mão</option>
+                <option value="esmaltação-normal-mao" data-preco="30" data-tempo="30">Esmaltação Normal Mão</option>
+                <option value="esmaltação-normal-pe" data-preco="30" data-tempo="30">Esmaltação Normal Pé</option>
+                <option value="cabelo-corte-escova" data-preco="50" data-tempo="30">Cabelo Corte com Escova</option>
+                <option value="hidratacao" data-preco="60" data-tempo="60">Hidratação</option>
             </select>
 
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -121,60 +129,84 @@
     </footer>
 
     <script>
-        let listaServicosDb = [];
+        // Serviços fixos (valor e tempo já definidos)
+        const SERVICOS_FIXOS = [
+            { key: 'alongamento-em-gel', descricao: 'Alongamento em Gel', preco: 170, tempo: 150 },
+            { key: 'esmaltação-em-gel', descricao: 'Esmaltação em Gel', preco: 70, tempo: 90 },
+            { key: 'blindagem-esmaltação-gel', descricao: 'Blindagem com Esmaltação em Gel', preco: 90, tempo: 90 },
+            { key: 'esmaltação-normal-pe-mao', descricao: 'Esmaltação Normal Pé e Mão', preco: 50, tempo: 60 },
+            { key: 'esmaltação-normal-mao', descricao: 'Esmaltação Normal Mão', preco: 30, tempo: 30 },
+            { key: 'esmaltação-normal-pe', descricao: 'Esmaltação Normal Pé', preco: 30, tempo: 30 },
+            { key: 'cabelo-corte-escova', descricao: 'Cabelo Corte com Escova', preco: 50, tempo: 30 },
+            { key: 'hidratacao', descricao: 'Hidratação', preco: 60, tempo: 60 }
+        ];
+
+        let listaServicosDb = []; // ids vindos do banco (para salvar corretamente)
         let carrinhoServicos = [];
         let totalGeral = 0;
         let tempoTotalGeral = 0;
 
         window.onload = function () {
+            // Tenta carregar IDs reais do banco (para o salvar funcionar)
             fetch('/listar-servicos')
                 .then(res => res.json())
                 .then(servicos => {
-                    listaServicosDb = servicos;
-                    const sel = document.getElementById('selServico');
-                    servicos.forEach(s => {
-                        sel.innerHTML += `<option value="${s.id}">${s.descricao}</option>`;
-                    });
+                    listaServicosDb = servicos || [];
                 })
-                .catch(err => console.error('Erro ao carregar serviços:', err));
+                .catch(err => {
+                    console.warn('Não foi possível carregar serviços do banco (usando valores fixos):', err);
+                });
         };
 
         function atualizarDadosServico() {
-            const id = document.getElementById('selServico').value;
-            const servico = listaServicosDb.find(s => s.id == id);
-            if (servico) {
-                document.getElementById('txtPreco').value = Number(servico.preco).toFixed(2);
-                document.getElementById('txtTempo').value = servico.tempo_estimado;
-            } else {
-                document.getElementById('txtPreco').value = '';
-                document.getElementById('txtTempo').value = '';
-            }
+            const sel = document.getElementById('selServico');
+            const option = sel.options[sel.selectedIndex];
+            const preco = option.getAttribute('data-preco');
+            const tempo = option.getAttribute('data-tempo');
+
+            document.getElementById('txtPreco').value = preco || '';
+            document.getElementById('txtTempo').value = tempo || '';
         }
 
         function adicionarServicoNaLista() {
-            const id = document.getElementById('selServico').value;
-            if (!id) {
+            const sel = document.getElementById('selServico');
+            const key = sel.value;
+            if (!key) {
                 alert('Selecione um serviço.');
                 return;
             }
-            const servico = listaServicosDb.find(s => s.id == id);
-            if (!servico) return;
 
-            if (carrinhoServicos.some(s => s.id == servico.id)) {
+            const option = sel.options[sel.selectedIndex];
+            const descricao = option.text;
+            const preco = Number(option.getAttribute('data-preco'));
+            const tempo = Number(option.getAttribute('data-tempo'));
+
+            // Evita adicionar o mesmo serviço duas vezes
+            if (carrinhoServicos.some(s => s.key === key)) {
                 alert('Este serviço já foi adicionado.');
                 return;
             }
 
+            // Tenta achar o id real no banco pelo nome
+            const noBanco = listaServicosDb.find(s => s.descricao === descricao);
+            const id = noBanco ? noBanco.id : null;
+
             carrinhoServicos.push({
-                id: servico.id,
-                descricao: servico.descricao,
-                preco: Number(servico.preco),
-                tempo: Number(servico.tempo_estimado)
+                key: key,
+                id: id,
+                descricao: descricao,
+                preco: preco,
+                tempo: tempo
             });
 
-            totalGeral += Number(servico.preco);
-            tempoTotalGeral += Number(servico.tempo_estimado);
+            totalGeral += preco;
+            tempoTotalGeral += tempo;
             atualizarTabela();
+
+            // Limpa a seleção
+            sel.value = '';
+            document.getElementById('txtPreco').value = '';
+            document.getElementById('txtTempo').value = '';
         }
 
         function removerServico(index) {
@@ -233,6 +265,13 @@
             }
             if (carrinhoServicos.length === 0) {
                 alert('Adicione pelo menos um serviço.');
+                return;
+            }
+
+            // Se algum serviço não tem id do banco, avisa
+            const semId = carrinhoServicos.filter(s => !s.id);
+            if (semId.length > 0) {
+                alert('Alguns serviços ainda não estão no banco.\nReinicie o servidor (node server.js) para cadastrar os serviços padrão e tente novamente.');
                 return;
             }
 
